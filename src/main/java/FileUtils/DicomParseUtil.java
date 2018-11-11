@@ -15,23 +15,23 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DicomParseUtil {
-    private static final char[] HEX_DIGITS = {
-            '0' , '1' , '2' , '3' , '4' , '5' ,
-            '6' , '7' , '8' , '9' , 'A' , 'B' ,
-            'C' , 'D' , 'E' , 'F'
-    };
     private static Attributes obj=null, object =null;
     private static  DicomInputStream din;
     private static double resultFactorDix;
-    private static double resultFacteurDix	= 0;
-    private static ElementDictionary dict = ElementDictionary.getStandardElementDictionary();
     private String result = null;
     private Double result2 = null;
     private int val2 = 0;
     private String nounUnit = null;
+    private static final char[] HEX_DIGITS = {
+            '0', '1', '2', '3', '4', '5',
+            '6', '7', '8', '9', 'A', 'B',
+            'C', 'D', 'E', 'F'
+    };
     private Double valueSpatial = null;
     private String nounUnitRatio = null;
+    private static double resultFacteurDix = 0;
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
+    private static ElementDictionary dict = ElementDictionary.getStandardElementDictionary();
 
 
     public DicomParseUtil(File file ){
@@ -50,7 +50,7 @@ public class DicomParseUtil {
      * @return Attributes
      * @throws IOException
      */
-    private static Attributes loadDicomObject(File f) throws IOException {
+    public static Attributes loadDicomObject(File f) throws IOException {
         if (f == null){
             return null;
         }else{
@@ -61,6 +61,17 @@ public class DicomParseUtil {
     }
 
     /**
+     * returns the name of the given Tag
+     *
+     * @param tagNr
+     * @return
+     */
+    public static String getHeaderName(int tagNr) {
+        return dict.keywordOf(tagNr);
+    }
+
+
+    /**
      * Giving attribut of metadata
      * @return
      */
@@ -69,13 +80,28 @@ public class DicomParseUtil {
 
     }
 
-    /**
-     * Put attribut
-     * @param obj
-     */
-    public void setObject(Attributes obj){
-        this.obj = obj;
+    private static String toElementString(String dcmele, int tag) {
+        StringBuffer sb = new StringBuffer();
+
+        int TAG[] = getObject().tags();
+        StringBuffer append = sb.append(TAG)
+                .append(" [").append(getObject().getVR(tag)).append("] ")
+                .append(object.tags()).append(": ")
+                .append(dcmele);
+        return sb.toString();
     }
+
+    /**
+     * Converts the string representation of a header number
+     * e.g. 0008,0010 to the corresponding integer as 0x00080010
+     * as used in the @see org.dcm4che2.data.Tag
+     * @param headerNr e.g. 0008,0010
+     * @return 0x00080010 as int
+     */
+    public static int toTagInt2(String headerNr) {
+        return Integer.parseInt(headerNr.replaceAll(",", ""), 16);
+    }
+
 
     /**
      * Permet d'afficher l'heure d'une valeur dicom en standard international yyyy.mm.dd/ Permit display a time in metadata for yyyy.mm.dd
@@ -135,7 +161,7 @@ public class DicomParseUtil {
                         }
                     }
                 }
-                for (int i = 0, j =4; i<j; i++) {
+                for (int i = 0, j = 4; i<j; i++) {
                     r.append(Numero.charAt(i));//The first char value of the sequence is at index zero, the next at index one, and so on, as for array indexing.
                 }
                 return r.toString();
@@ -144,6 +170,41 @@ public class DicomParseUtil {
         return Numero;
     }
 
+    /**
+     * Removing comma in String
+     *
+     * @param num
+     * @return
+     */
+    public static String formatNotDot(String num) {
+        num = num.trim().replaceAll("[^0-9\\+]", "");
+        if (num.matches("^0*$")) {
+            num = "";
+        }
+        return num;
+    }
+
+    /**
+     * Format
+     * hh.mm.ss
+     *
+     * @param Numero
+     * @return
+     */
+    public static String FormatTime(String Numero) {
+
+        if (Numero.matches("^[0-9]*$")) {
+            StringBuilder r = new StringBuilder();
+            for (int i = 0, j = 6; i < j; i++) {
+                r.append(Numero.charAt(i));
+                if ((i % 2 == 1) && (i < (j - 1))) {
+                    r.append(':');
+                }
+            }
+            return r.toString();
+        }
+        return Numero;
+    }
     /**
      * Converts the string representation of a header number
      * e.g. 0008,0010 to the corresponding integer as 0x00080010
@@ -156,6 +217,39 @@ public class DicomParseUtil {
     }
 
     /**
+     * Format
+     * hh.mm.ss.frac
+     *
+     * @param Numero
+     * @return
+     */
+    public static String FormatTimes(String Numero) {
+        if (Numero.matches("^[0-9].*$")) {
+            StringBuilder r = new StringBuilder();
+            for (int i = 0, j = Numero.length(); i < j; i++) {
+                r.append(Numero.charAt(i));
+                if ((i % 2 == 1) & (i < 5)) {
+                    r.append(':');
+                }
+            }
+            return r.toString();
+        }
+        return Numero;
+    }
+
+    /**
+     * Giving power
+     * Example:
+     * setFactorPower(10,2)//10^2
+     *
+     * @param result3
+     * @param factor
+     * @return
+     */
+    public static double setFactorPower(double result3, double factor) {
+        return resultFactorDix = Math.pow(result3, factor);
+    }
+    /**
      * Remove string ^ in file dicom
      * @param num
      * @return
@@ -164,7 +258,6 @@ public class DicomParseUtil {
         num = num.replaceAll("\\^+", " ");
         return num;
     }
-
     /**
      * Convertor tag to String
      * Using VM !=1
@@ -177,7 +270,6 @@ public class DicomParseUtil {
         String tagValue = Arrays.asList(tagValue2).toString();
         return tagValue;
     }
-
     /**
      * Convertor tag to String
      * Using VM !=1
@@ -191,7 +283,6 @@ public class DicomParseUtil {
         String tagValue =DicomParseUtil.arrayToString(tagValue2,"\\");
         return tagValue;
     }
-
     /**
      * Convert an array of strings to one string
      * Put the 'separator' string between each element
@@ -210,146 +301,205 @@ public class DicomParseUtil {
         }
         return result.toString();
     }
+    /**
+     * Permit display time in hh.mm.ss
+     * (0008,0030) AT S Study Time
+     * (0008,0031) AT S Series Time
+     * (0008,0032) AT S Acquisition Time
+     * (0008,0033) AT S Image Time
+     * @param Tag : giving tag
+     * @return
+     * @throws IOException
+     */
+    public  String dicomTime(int Tag) throws IOException{
+        if(getObject().contains(Tag)==true ){
+            String tagValue = getObject().getString(Tag);
+            String tagValueNotDot = formatNotDot(tagValue);
+            String tagTimeFomat = FormatTimes(tagValueNotDot);
+            return tagTimeFomat;
+        } else {
+            return null;
+        }
+    }
+    /**
+     * Permit display time in hh.mm.ss.fac
+     * (0008,0030) AT S Study Time
+     * (0008,0031) AT S Series Time
+     * (0008,0032) AT S Acquisition Time
+     * (0008,0033) AT S Image Time
+     * @param Tag : giving tag
+     * @return
+     * @throws IOException
+     */
+    public String dicomTimeTotal( int Tag) throws IOException{
+        if(getObject().contains(Tag)==true ){
+            String tagValue =  getObject().getString(Tag);
+            String tagTimeFomat = FormatTimes(tagValue);
+            return tagTimeFomat;
+        } else {
+            return null;
+        }
+    }
+    /**
+     * Permit display time in hh.mm.ss
+     * (0008,0030) AT S Study Time
+     * (0008,0031) AT S Series Time
+     * (0008,0032) AT S Acquisition Time
+     * (0008,0033) AT S Image Time
+     * @param object : Metadata
+     * @param Tag : value dicom
+     * @return new value String
+     * @throws IOException
+     */
+    public String dicomTime2(Attributes object, int Tag) throws IOException{
+        String tagValue =  object.getString(Tag);
+        String tagValueNotDot = formatNotDot(tagValue);
+        System.out.println(FormatTime(tagValueNotDot));
+        String tagTimeFomat = FormatTimes(tagValueNotDot);
+        return tagTimeFomat;
+    }
+    /**
+     * Permit display time in hh.mm.ss.frac
+     * (0008,0030) AT S Study Time
+     * (0008,0031) AT S Series Time
+     * (0008,0032) AT S Acquisition Time
+     * (0008,0033) AT S Image Time
+     * @param object : Metadata
+     * @param Tag : value dicom
+     * @return new value String
+     * @throws IOException
+     */
+    public String dicomTime3(Attributes object, int Tag) throws IOException{
+        String tagValue = object.getString(Tag);
+        String tagTimeFomat = FormatTimes(tagValue);
+        return tagTimeFomat;
+    }
+    /**
+     * reads a int value from the Dicomheader
+     * @param tagNr the Tag to read
+     * @return the value as int
+     */
+    public int getHeaderIntegerValue(int tagNr) {
+        return getObject().getInt(tagNr,0);
+    }
+    /**
+     *
+     * @param tagNr e.g. "0018,0050" to get Slice Thickness<br>
+     * or "0008,0102#0054,0220" to get the Coding Scheme Designator after View Code Sequence
+     * @return int
+     */
+    public int getHeaderIntegerValue(String tagNr) {
+        return getHeaderIntegerValue(toTagInt(tagNr));
+    }
+
+
+
+
+
 
     /**
-     * returns the name of the given Tag
+     * checks if the Header contains the given tag
      * @param tagNr
      * @return
      */
-    public static String getHeaderName(int tagNr) {
-        return dict.keywordOf(tagNr);
-    }
-
-    private static  String toElementString(String dcmele,int tag) {
-        StringBuffer sb = new StringBuffer();
-
-        int TAG[] = getObject().tags();
-        StringBuffer append = sb.append(TAG)
-                .append(" [").append(getObject().getVR(tag)).append("] ")
-                .append(object.tags()).append(": ")
-                .append(dcmele);
-        return sb.toString();
+    public boolean containsHeaderTag(String tagNr) {
+        return containsHeaderTag(toTagInt(tagNr));
     }
 
     /**
-     * Converts the string representation of a header number
-     * e.g. 0008,0010 to the corresponding integer as 0x00080010
-     * as used in the @see org.dcm4che2.data.Tag
-     * @param headerNr e.g. 0008,0010
-     * @return 0x00080010 as int
-     */
-    public static int toTagInt2(String headerNr){
-        return Integer.parseInt(headerNr.replaceAll(",", ""), 16);
-    }
-
-    /**
-     * Removing comma in String
-     * @param num
+     * checks if the Header contains the given tag
+     * @param tagNr
      * @return
      */
-    public static String formatNotDot(String num) {
-        num = num.trim().replaceAll("[^0-9\\+]", "");
-        if (num.matches("^0*$")){
-            num = "";
-        }
-        return num;
-    }
-
-    /**
-     * Format
-     * hh.mm.ss
-     * @param Numero
-     * @return
-     */
-    public static String FormatTime(String Numero) {
-
-        if (Numero.matches("^[0-9]*$")) {
-            StringBuilder r = new StringBuilder();
-            for (int i = 0, j = 6; i < j; i++) {
-                r.append(Numero.charAt(i));
-                if ((i % 2 == 1) && (i < (j - 1))){
-                    r.append(':');
-                }
-            }
-            return r.toString();
-        }
-        return Numero;
-    }
-
-    /**
-     * Format
-     * hh.mm.ss.frac
-     * @param Numero
-     * @return
-     */
-    public static String FormatTimes(String Numero) {
-        if (Numero.matches("^[0-9].*$")) {
-            StringBuilder r = new StringBuilder();
-            for (int i = 0,j=Numero.length();i<j; i++) {
-                r.append(Numero.charAt(i));
-                if ((i % 2 == 1)&(i<5)){
-                    r.append(':');
-                }
-            }
-            return r.toString();
-        }
-        return Numero;
-    }
-
-    /**
-     * Giving power
-     * Example:
-     *          setFactorPower(10,2)//10^2
-     * @param result3
-     * @param factor
-     * @return
-     * @return
-     */
-    public static double setFactorPower(double result3, double factor){
-        return resultFactorDix= Math.pow(result3, factor);
+    public boolean containsHeaderTag(int tagNr) {
+        return getObject().contains(tagNr);
     }
 
     /**
      * Giving  getFactorPower
      */
-    public static double getFactorPower(){
+    public static double getFactorPower() {
         return resultFactorDix;
     }
 
+
     /**
-     *  Giving pixelData
+     * returns the name of the given Header field
+     * @param tagNr
+     * @return the name of the Field e.g. Patients Name
+     */
+    public String getHeaderName(String tagNr) {
+        try {
+            return getHeaderName(toTagInt(tagNr));
+        } catch (Exception e) {
+
+            return "";
+        }
+    }
+
+    /**
+     * returns the String representation of the given header field
+     * if it exists in the header
+     * @param tagNr
+     * @return
+     */
+    public String getHeader(int tagNr) {
+        try {
+            String  dcmele = getObject().getString(tagNr);
+            return toElementString(dcmele, tagNr);
+        } catch (Exception e) {
+
+            return "";
+        }
+    }
+
+    /**
+     * Giving pixelData
+     *
      * @param dcmObj
      * @return
      */
-    public static int[] lattricePixelData(Attributes dcmObj){
+    public static int[] lattricePixelData(Attributes dcmObj) {
         int[] data = dcmObj.getInts(Tag.PixelData);
         return data;
     }
 
+
     /**
-     * Return value table input
-     * @param object
-     * @param PATIENT_ADDITIONAL_TAGS : Table int
-     *
-     * example :
-     *  public static final  int[] tag = {
-    0x00080020,
-    0x00080022,
-    };
-     *
-     *FileInputStream fis = new FileInputStream(fileInput);
-     *DicomInputStream dis = new DicomInputStream(fis);
-     *DicomObject obj = dis.readDicomObject();
-     *String nounValue[] =getValue(obj,tag);
-     *
+     * checks wether the header is empty or not
      * @return
      */
-    private static String[] getValue(Attributes object, int[]  PATIENT_ADDITIONAL_TAGS){
-        String [] value = new String [PATIENT_ADDITIONAL_TAGS.length];
-        int i =0;
-        while (i<PATIENT_ADDITIONAL_TAGS.length){
+    public boolean isEmpty() {
+        if (getObject() == null || getObject().isEmpty()) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Return value table input
+     *
+     * @param object
+     * @param PATIENT_ADDITIONAL_TAGS : Table int
+     *                                <p>
+     *                                example :
+     *                                public static final  int[] tag = {
+     *                                0x00080020,
+     *                                0x00080022,
+     *                                };
+     *                                <p>
+     *                                FileInputStream fis = new FileInputStream(fileInput);
+     *                                DicomInputStream dis = new DicomInputStream(fis);
+     *                                DicomObject obj = dis.readDicomObject();
+     *                                String nounValue[] =getValue(obj,tag);
+     * @return
+     */
+    private static String[] getValue(Attributes object, int[] PATIENT_ADDITIONAL_TAGS) {
+        String[] value = new String[PATIENT_ADDITIONAL_TAGS.length];
+        int i = 0;
+        while (i < PATIENT_ADDITIONAL_TAGS.length) {
             for (int tag : PATIENT_ADDITIONAL_TAGS) {
-                value[i]=object.getString(tag);
+                value[i] = object.getString(tag);
                 i++;
             }
 //System.out.print(value[0]+"\n");
@@ -360,31 +510,45 @@ public class DicomParseUtil {
 
     /**
      * Donne les valeurs calculer des puissances/ Put and computing power
+     *
      * @param result3
      * @param facteur
      * @return
-     * @return
      */
-    public static double setFacteurPuissance(double result3, double facteur){
-        return resultFacteurDix	= Math.pow(result3, facteur);
+    public static double setFacteurPuissance(double result3, double facteur) {
+        return resultFacteurDix = Math.pow(result3, facteur);
     }
 
     /**
      * Obtient la valeur de puissance/ Giving value power
+     *
      * @return
      */
-    public static double getFacteurPuissance(){
+    public static double getFacteurPuissance() {
         return resultFacteurDix;
     }
 
     /**
      * converts the int representation of a header number
      * e.g. 0x00080010 to the corresponding String 0008,0010
-     * @return 0008,0010 as String
+     *
+     * @return 0008, 0010 as String
      */
     public static String toTagString(int tagNr) {
         return shortToHex(tagNr >> 16) +
                 ',' + shortToHex(tagNr);
+    }
+
+    /**
+     * Round  double after dot
+     *
+     * @param a : value convertor
+     * @param n number of decade
+     * @return new value
+     */
+    public double floor(double a, int n) {
+        double p = Math.pow(10.0, n);
+        return Math.floor((a * p) + 0.5) / p;
     }
 
     public static String shortToHex(int val) {
@@ -406,6 +570,68 @@ public class DicomParseUtil {
         ch[off+1] = HEX_DIGITS[(val >> 8) & 0xf];
         ch[off+2] = HEX_DIGITS[(val >> 4) & 0xf];
         ch[off+3] = HEX_DIGITS[val & 0xf];
+    }
+    /**
+     * Giving pixel data
+     * @return
+     * @throws IOException
+     */
+    public int[] lattricePixelData2() throws IOException{
+        int[] data = getObject().getInts(Tag.PixelData);
+        return data;
+    }
+    /**
+     * Giving pixel data
+     * @param dcmObj
+     * @return
+     * @throws IOException
+     */
+    public byte[] lattricePixelDataBytes(Attributes dcmObj) throws IOException{
+        byte[] data = dcmObj.getBytes(Tag.PixelData);
+        return data;
+    }
+    /**
+     * Giving pixel data
+     * @return
+     * @throws IOException
+     */
+    public byte[] lattricePixelDataBytes2() throws IOException{
+        byte[] data = getObject().getBytes(Tag.PixelData);
+        return data;
+    }
+    /**
+     * Extraction PixelData
+     * @param raster of dicom
+     * @return
+     */
+    private int[][] extractData(Raster raster) {
+        int w = raster.getWidth();
+        int h = raster.getHeight();
+        System.out.printf("w = %d  h = %d%n", w, h);
+        //WritableRaster raster = (WritableRaster) getMyImage();
+        int[][] data = new int[h][w];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                data[y][x] =raster.getSample(x, y, 0);
+            }
+        }
+        return data;
+    }
+    /**
+     * Extraction PixelData
+     * @return
+     */
+    private int[] getPixelData(int[][] data2) {
+        int h = data2.length;
+        int w = data2[0].length;
+        int[] array = new int[h * w];
+        for (int y = 0; y < h; y++) {
+            for (int x = 0; x < w; x++) {
+                int index = y * w + x;
+                array[index] = data2[y][x];//ligne
+            }
+        }
+        return array;
     }
 
     public static void main(String[] args) throws Exception {
@@ -454,313 +680,6 @@ public class DicomParseUtil {
         byte[] bytesex = attrs.getBytes(Tag.PatientSex);
         System.out.println("性别: " + new String(bytesex,"gb18030"));
     }
-
-    /**
-     * Display metadata
-     * @param file : file inout
-     * @throws IOException
-     */
-    public String readTagDicom(File file) throws IOException{
-        din = new DicomInputStream(file);
-        object = din.readFileMetaInformation() ;
-        String value = object.toString();
-        object = din.readDataset(-1, -1);
-        return value;
-    }
-
-    /**
-     * Permet d'afficher l'heure d'une valeur dicom en standard international yyyy.mm.dd/ Permit display time in format yyyy.mm.dd
-     * @param Tag : valeur du tag / int tag
-     * @param valueBool : si true Format yyyy.mm.dd sinon format dd.mm.yyyy/ if true then format yyyy.mm.dd else dd.mm.yyyy
-     * @param valueNoun :  "dot" mettre la date en format yyyy.mm.dd ou dd.mm.yyyy sinon en format yyyy mm dd ou dd mm yyyy/ "dot" put yyyy.mm.dd or dd.mm.dd or dd.mm.yyyy else yyyy mm or dd mm yyyy
-     * @return afficher le string du tag selon le standard international/ return string Date
-     * @throws IOException
-     */
-    public String dicomDate(int Tag,boolean valueBool, String valueNoun) throws IOException{
-        if(getObject().contains(Tag) ){
-            String tagValue =  getObject().getString(Tag);
-            String tagDayFomat = FormatDate(tagValue,valueBool,valueNoun);
-            return tagDayFomat;
-        }else{
-            return null;
-        }
-
-    }
-
-    /**
-     * Read value tag of VR = DA
-     *
-     * If use setDicomObject(readDicomObject(File f)), and getHeaderDateValue(getDicomObject())
-     * @param tagNr "0000,0010"
-     * @return
-     */
-    public Date getHeaderDateValue(String tagNr) {
-        return getHeaderDateValue(toTagInt(tagNr));
-    }
-
-    /**
-     * Read value tag of VR = DA
-     *
-     * @param tagNr see dcm4che2
-     * @return
-     */
-    public Date getHeaderDateValue(int tagNr) {
-        return getObject().getDate(tagNr);
-    }
-
-    /**
-     * Read value tag of VR = DA
-     * @param tagNr
-     * @param dicomObj
-     * @return
-     */
-    public Date getHeaderDateValue(int tagNr,Attributes dicomObj) {
-        return dicomObj.getDate(tagNr);
-    }
-
-    /**
-     * Read value tag of VR = DA
-     * @param tagNr :"0000,0010"
-     * @param dicomObj
-     * @return
-     */
-    public Date getHeaderDateValue(String tagNr,Attributes dicomObj) {
-        return getHeaderDateValue(toTagInt(tagNr), dicomObj);
-    }
-
-    /**
-     * Permit display time in hh.mm.ss
-     * (0008,0030) AT S Study Time
-     * (0008,0031) AT S Series Time
-     * (0008,0032) AT S Acquisition Time
-     * (0008,0033) AT S Image Time
-     * @param Tag : giving tag
-     * @return
-     * @throws IOException
-     */
-    public  String dicomTime(int Tag) throws IOException{
-        if(getObject().contains(Tag)==true ){
-            String tagValue = getObject().getString(Tag);
-            String tagValueNotDot = formatNotDot(tagValue);
-            String tagTimeFomat = FormatTimes(tagValueNotDot);
-            return tagTimeFomat;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Permit display time in hh.mm.ss.fac
-     * (0008,0030) AT S Study Time
-     * (0008,0031) AT S Series Time
-     * (0008,0032) AT S Acquisition Time
-     * (0008,0033) AT S Image Time
-     * @param Tag : giving tag
-     * @return
-     * @throws IOException
-     */
-    public String dicomTimeTotal( int Tag) throws IOException{
-        if(getObject().contains(Tag)==true ){
-            String tagValue =  getObject().getString(Tag);
-            String tagTimeFomat = FormatTimes(tagValue);
-            return tagTimeFomat;
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Permit display time in hh.mm.ss
-     * (0008,0030) AT S Study Time
-     * (0008,0031) AT S Series Time
-     * (0008,0032) AT S Acquisition Time
-     * (0008,0033) AT S Image Time
-     * @param object : Metadata
-     * @param Tag : value dicom
-     * @return new value String
-     * @throws IOException
-     */
-    public String dicomTime2(Attributes object, int Tag) throws IOException{
-        String tagValue =  object.getString(Tag);
-        String tagValueNotDot = formatNotDot(tagValue);
-        System.out.println(FormatTime(tagValueNotDot));
-        String tagTimeFomat = FormatTimes(tagValueNotDot);
-        return tagTimeFomat;
-    }
-
-    /**
-     * Permit display time in hh.mm.ss.frac
-     * (0008,0030) AT S Study Time
-     * (0008,0031) AT S Series Time
-     * (0008,0032) AT S Acquisition Time
-     * (0008,0033) AT S Image Time
-     * @param object : Metadata
-     * @param Tag : value dicom
-     * @return new value String
-     * @throws IOException
-     */
-    public String dicomTime3(Attributes object, int Tag) throws IOException{
-        String tagValue = object.getString(Tag);
-        String tagTimeFomat = FormatTimes(tagValue);
-        return tagTimeFomat;
-    }
-
-    /**
-     * reads a int value from the Dicomheader
-     * @param tagNr the Tag to read
-     * @return the value as int
-     */
-    public int getHeaderIntegerValue(int tagNr) {
-        return getObject().getInt(tagNr,0);
-    }
-
-    /**
-     *
-     * @param tagNr e.g. "0018,0050" to get Slice Thickness<br>
-     * or "0008,0102#0054,0220" to get the Coding Scheme Designator after View Code Sequence
-     * @return int
-     */
-    public int getHeaderIntegerValue(String tagNr) {
-        return getHeaderIntegerValue(toTagInt(tagNr));
-    }
-
-    /**
-     * checks if the Header contains the given tag
-     * @param tagNr
-     * @return
-     */
-    public boolean containsHeaderTag(String tagNr) {
-        return containsHeaderTag(toTagInt(tagNr));
-    }
-
-    /**
-     * checks if the Header contains the given tag
-     * @param tagNr
-     * @return
-     */
-    public boolean containsHeaderTag(int tagNr) {
-        return getObject().contains(tagNr);
-    }
-
-    /**
-     * returns the name of the given Header field
-     * @param tagNr
-     * @return the name of the Field e.g. Patients Name
-     */
-    public String getHeaderName(String tagNr) {
-        try {
-            return getHeaderName(toTagInt(tagNr));
-        } catch (Exception e) {
-
-            return "";
-        }
-    }
-
-    /**
-     * returns the String representation of the given header field
-     * if it exists in the header
-     * @param tagNr
-     * @return
-     */
-    public String getHeader(int tagNr) {
-        try {
-            String  dcmele = getObject().getString(tagNr);
-            return toElementString(dcmele, tagNr);
-        } catch (Exception e) {
-
-            return "";
-        }
-    }
-
-    /**
-     * checks wether the header is empty or not
-     * @return
-     */
-    public boolean isEmpty() {
-        if (getObject() == null || getObject().isEmpty()) {
-            return true;
-        }
-        return false;
-    }
-
-    /**
-     * Round  double after dot
-     * @param a : value convertor
-     * @param n number of decade
-     * @return new value
-     */
-    public double floor(double a, int n){
-        double p =Math.pow(10.0,n);
-        return Math.floor((a*p)+0.5)/p;
-    }
-
-    /**
-     * Giving pixel data
-     * @return
-     * @throws IOException
-     */
-    public int[] lattricePixelData2() throws IOException{
-        int[] data = getObject().getInts(Tag.PixelData);
-        return data;
-    }
-
-    /**
-     * Giving pixel data
-     * @param dcmObj
-     * @return
-     * @throws IOException
-     */
-    public byte[] lattricePixelDataBytes(Attributes dcmObj) throws IOException{
-        byte[] data = dcmObj.getBytes(Tag.PixelData);
-        return data;
-    }
-
-    /**
-     * Giving pixel data
-     * @return
-     * @throws IOException
-     */
-    public byte[] lattricePixelDataBytes2() throws IOException{
-        byte[] data = getObject().getBytes(Tag.PixelData);
-        return data;
-    }
-
-    /**
-     * Extraction PixelData
-     * @param raster of dicom
-     * @return
-     */
-    private int[][] extractData(Raster raster) {
-        int w = raster.getWidth();
-        int h = raster.getHeight();
-        System.out.printf("w = %d  h = %d%n", w, h);
-        //WritableRaster raster = (WritableRaster) getMyImage();
-        int[][] data = new int[h][w];
-        for (int y = 0; y < h; y++) {
-            for (int x = 0; x < w; x++) {
-                data[y][x] =raster.getSample(x, y, 0);
-            }
-        }
-        return data;
-    }
-
-    /**
-     * Extraction PixelData
-     * @return
-     */
-    private int[] getPixelData(int[][] data2){
-        int h = data2.length;
-        int w = data2[0].length;
-        int[] array = new int[h*w];
-        for(int y = 0; y < h; y++) {
-            for(int x = 0; x < w; x++) {
-                int index = y*w + x;
-                array[index] = data2[y][x];//ligne
-            }
-        }
-        return array;
-    }
-
     /**
      * Reading VR = SQ
      *
@@ -778,7 +697,6 @@ public class DicomParseUtil {
         }
         return  valueString;
     }
-
     /**
      * Value inside VR = SQ
      * @param inputFile : input File
@@ -794,7 +712,6 @@ public class DicomParseUtil {
         valueString = attr.getString(tag);
         return valueString;
     }
-
     /**
      * Les unités spécifiques selon les tags pour vr= SQ/ Unity specical for tags VR= SQ
      * @param TAG :
@@ -996,7 +913,6 @@ public class DicomParseUtil {
             this.setNounUnit("None or not applicable");
         }
     }
-
     /**
      * Enregistre l'unité des items/ Put unity of items
      * @param nounUnit
@@ -1005,7 +921,6 @@ public class DicomParseUtil {
     public String setNounUnit(String nounUnit){
         return this.nounUnit = nounUnit;
     }
-
     /**
      * On obtient l'unité des items./Giving unity of items
      * @return le nom de l'unité
@@ -1013,7 +928,6 @@ public class DicomParseUtil {
     public String getNounUnit(){
         return nounUnit;
     }
-
     /**
      * Special Ratio Spatial toutes les unites sont en mm/ Giving tag ratio Spatial of mm
      * @param TAG : entree choisi
@@ -1082,24 +996,45 @@ public class DicomParseUtil {
             }
         }
     }
-
     /**
      * Prend la valeur d'un Ratio Spatial/Put value Ratio Spatial
      * @param valueSpatial
      * @return
      */
-    public Double setTagItemDoubleRatio(double valueSpatial){
+    public Double setTagItemDoubleRatio(double valueSpatial) {
         return this.valueSpatial = valueSpatial;
     }
 
     /**
      * Donne la valeur du Ratio/Diving value ratio Spatial
+     *
      * @return
      */
-    public Double getValeurTagItemDoubleRatio(){
+    public Double getValeurTagItemDoubleRatio() {
         return valueSpatial;
     }
 
+    /**
+     * Put attribut
+     *
+     * @param obj
+     */
+    public void setObject(Attributes obj) {
+        this.obj = obj;
+    }
+
+    /**
+     * Display metadata
+     * @param file : file inout
+     * @throws IOException
+     */
+    public String readTagDicom(File file) throws IOException{
+        din = new DicomInputStream(file);
+        object = din.readFileMetaInformation() ;
+        String value = object.toString();
+        object = din.readDataset(-1, -1);
+        return value;
+    }
     /**
      * Enregistre l'unite des items /Put unity unity items
      * @return this.nounUnit = nounUnit
@@ -1107,7 +1042,6 @@ public class DicomParseUtil {
     public String setNounUnitRatio(String nounUnitRatio){
         return this.nounUnitRatio = nounUnitRatio;
     }
-
     /**
      * On obtient l'unite des items./Giving unity items
      * @return le nom de l'unité
@@ -1115,7 +1049,6 @@ public class DicomParseUtil {
     public String getNounUnitRatio(){
         return nounUnitRatio;
     }
-
     /**
      * Prend la valeur interne d'un tag Item/ Put tag Item
      * @param result
@@ -1124,7 +1057,6 @@ public class DicomParseUtil {
     public String setTagItem(String result){
         return this.result = result;
     }
-
     /**
      * Donne la valeur du tag rechercher/Giving a value of tag seek
      * @return le String de la valeur rechercher du tag dans un item
@@ -1132,7 +1064,6 @@ public class DicomParseUtil {
     public String getValeurTagItem(){
         return result;
     }
-
     /**
      * Prend la valeur interne d'un tag Item/ Put the value tag iteù
      * @return
@@ -1140,7 +1071,6 @@ public class DicomParseUtil {
     public Double setTagItemDouble(double result2){
         return this.result2 = result2;
     }
-
     /**
      * Donne la valeur du tag rechercher/Giving the value Tag
      * @return le Double de la valeur rechercher du tag dans un item
@@ -1148,7 +1078,6 @@ public class DicomParseUtil {
     public Double getValeurTagItemDouble(){
         return result2;
     }
-
     /**
      * reads a String value from tag dicom (dcm4che2)
      * @param tagNr the Tag to read
@@ -1169,7 +1098,6 @@ public class DicomParseUtil {
             return "";
         }
     }
-
     /**
      * reads a String value from tag dicom (dcm4che2)
      * @param tagNr the Tag to read
@@ -1188,7 +1116,6 @@ public class DicomParseUtil {
             return null;
         }
     }
-
     /**
      * reads a String value from the Dicomheader
      * @param tagNr the Tag to read
@@ -1209,7 +1136,6 @@ public class DicomParseUtil {
             return "";
         }
     }
-
     /**
      *reads the tag (group,element)
      * @param headerNr e.g. "0018,0050" to get Slice Thickness<br>
@@ -1219,6 +1145,7 @@ public class DicomParseUtil {
         headerNr = headerNr.replaceAll("xx", "00").replaceAll("XX", "00");
         return getHeaderStringValue(toTagInt(headerNr));
     }
+
 
     /**
      * Giving time a tag ("xxxx,")
@@ -1250,6 +1177,7 @@ public class DicomParseUtil {
         return null;
     }
 
+
     /**
      * retrieves a specific HeaderTag that is inside anotehr tag
      * or "0008,0102, 0054,0220" to get the Coding Scheme Designator after View Code Sequence
@@ -1260,7 +1188,7 @@ public class DicomParseUtil {
     public String getHeaderValueInsideTag(int[] tagHierarchy) {
         try {
 
-            for (int i = 0; i < tagHierarchy.length-1; i++) {
+            for (int i = 0; i < tagHierarchy.length - 1; i++) {
                 return getObject().getString(tagHierarchy[i]);
             }
         } catch (Exception e) {
@@ -1271,6 +1199,58 @@ public class DicomParseUtil {
             return "";
         }
         return null;
+    }
+
+    /**
+     * Permet d'afficher l'heure d'une valeur dicom en standard international yyyy.mm.dd/ Permit display time in format yyyy.mm.dd
+     *
+     * @param Tag       : valeur du tag / int tag
+     * @param valueBool : si true Format yyyy.mm.dd sinon format dd.mm.yyyy/ if true then format yyyy.mm.dd else dd.mm.yyyy
+     * @param valueNoun :  "dot" mettre la date en format yyyy.mm.dd ou dd.mm.yyyy sinon en format yyyy mm dd ou dd mm yyyy/ "dot" put yyyy.mm.dd or dd.mm.dd or dd.mm.yyyy else yyyy mm or dd mm yyyy
+     * @return afficher le string du tag selon le standard international/ return string Date
+     * @throws IOException
+     */
+    public String dicomDate(int Tag, boolean valueBool, String valueNoun) throws IOException {
+        if (getObject().contains(Tag)) {
+            String tagValue = getObject().getString(Tag);
+            String tagDayFomat = FormatDate(tagValue, valueBool, valueNoun);
+            return tagDayFomat;
+        } else {
+            return null;
+        }
+
+    }
+
+    /**
+     * Read value tag of VR = DA
+     * <p>
+     * If use setDicomObject(readDicomObject(File f)), and getHeaderDateValue(getDicomObject())
+     *
+     * @param tagNr "0000,0010"
+     * @return
+     */
+    public Date getHeaderDateValue(String tagNr) {
+        return getHeaderDateValue(toTagInt(tagNr));
+    }
+
+    /**
+     * Read value tag of VR = DA
+     *
+     * @param tagNr see dcm4che2
+     * @return
+     */
+    public Date getHeaderDateValue(int tagNr) {
+        return getObject().getDate(tagNr);
+    }
+
+    /**
+     * Read value tag of VR = DA
+     * @param tagNr
+     * @param dicomObj
+     * @return
+     */
+    public Date getHeaderDateValue(int tagNr,Attributes dicomObj) {
+        return dicomObj.getDate(tagNr);
     }
 
     /**
@@ -1305,6 +1285,9 @@ public class DicomParseUtil {
         dos.setEncodingOptions(encOpts);
     }
 
+
+
+
     /**
      * Create overlay in pixelData
      * @param object
@@ -1324,7 +1307,6 @@ public class DicomParseUtil {
         }
         object.setInt( Tag.PixelData, VR.OW, pixels );
     }
-
     /**
      *  dicom.setString(Tag.PerformingPhysicianName, VR.PN, "Jean");
      dicom.setString(Tag.AdmittingDiagnosesDescription, VR.LO, "CHU");
@@ -1332,12 +1314,22 @@ public class DicomParseUtil {
      Attributes dicom2 = new Attributes();
      * @param dicom
      */
-    public void setItem(Attributes dicom, int TagSequenceName){
-        Sequence seq= dicom.newSequence(TagSequenceName,0);
+    public void setItem(Attributes dicom, int TagSequenceName) {
+        Sequence seq = dicom.newSequence(TagSequenceName, 0);
         dicom.setString(Tag.CodingSchemeDesignator, VR.SH, "SRT");
         dicom.setString(Tag.CodeValue, VR.SH, "T-AA000");
         dicom.setString(Tag.CodeMeaning, VR.LO, "Eye");
         seq.add(dicom);
+    }
+
+    /**
+     * Read value tag of VR = DA
+     * @param tagNr :"0000,0010"
+     * @param dicomObj
+     * @return
+     */
+    public Date getHeaderDateValue(String tagNr,Attributes dicomObj) {
+        return getHeaderDateValue(toTagInt(tagNr), dicomObj);
     }
 
 }
