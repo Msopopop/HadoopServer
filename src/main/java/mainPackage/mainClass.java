@@ -1,3 +1,5 @@
+package mainPackage;
+
 import FileUtils.DicomParseUtil;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -6,6 +8,9 @@ import java.io.File;
 
 public class mainClass {
     public static void main(String[] args) throws Exception {
+        //ftpServer ftpServer = new ftpServer(21);
+        //ftpServer.run();
+
         File file = new File("test.dcm");
         DicomParseUtil d = new DicomParseUtil(file);
         @SuppressWarnings("static-access")
@@ -51,7 +56,7 @@ public class mainClass {
         System.out.println("姓名: " + new String(bytename, "gb18030"));
         byte[] bytesex = attrs.getBytes(Tag.PatientSex);
         System.out.println("性别: " + new String(bytesex, "gb18030"));
-
+        //ftpServer.stop();
     }
 
 }
