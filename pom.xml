@@ -20,6 +20,9 @@
         <enforcer.maven-version>[3.0.5,)</enforcer.maven-version>
         <dcm4che.version>5.14.1</dcm4che.version>
         <weasis.version>3.0.2-rc1</weasis.version>
+        <hadoop.version>2.6.0</hadoop.version>
+        <zookeeper.version>3.4.6</zookeeper.version>
+        <hbase.version>1.0.0</hbase.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
     </properties>
@@ -204,32 +207,32 @@
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
-            <version>3.1.1</version>
+            <version>${hadoop.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-mapreduce-client-core -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-mapreduce-client-core</artifactId>
-            <version>3.1.1</version>
+            <version>${hadoop.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-common -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-common</artifactId>
-            <version>3.1.1</version>
+            <version>${hadoop.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.zookeeper/zookeeper -->
         <dependency>
             <groupId>org.apache.zookeeper</groupId>
             <artifactId>zookeeper</artifactId>
-            <version>3.4.13</version>
+            <version>${zookeeper.version}</version>
             <type>pom</type>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.hbase/hbase-client -->
         <dependency>
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
-            <version>1.4.8</version>
+            <version>${hbase.version}</version>
         </dependency>
         <dependency>
             <groupId>org.weasis.opencv</groupId>

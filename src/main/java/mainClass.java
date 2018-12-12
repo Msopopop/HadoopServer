@@ -10,6 +10,7 @@ public class mainClass {
         DicomParseUtil d = new DicomParseUtil(file);
         @SuppressWarnings("static-access")
         Attributes attrs = d.loadDicomObject(file);
+
         //输出所有属性信息
         System.out.println("所有信息: " + attrs);
         //获取行
@@ -50,6 +51,7 @@ public class mainClass {
         System.out.println("姓名: " + new String(bytename, "gb18030"));
         byte[] bytesex = attrs.getBytes(Tag.PatientSex);
         System.out.println("性别: " + new String(bytesex, "gb18030"));
+
     }
 
 }
