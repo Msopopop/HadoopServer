@@ -11,7 +11,7 @@ public class mainClass {
         //ftpServer ftpServer = new ftpServer(21);
         //ftpServer.run();
 
-        File file = new File("test.dcm");
+        File file = new File("test1.dcm");
         DicomParseUtil d = new DicomParseUtil(file);
         @SuppressWarnings("static-access")
         Attributes attrs = d.loadDicomObject(file);
