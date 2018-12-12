@@ -12,12 +12,8 @@ import java.nio.file.*;
 import java.util.List;
 
 public class mainClass {
-    private static Logger logger = Logger.getLogger(mainClass.class.getClass());
+    private static Logger logger = Logger.getLogger(mainClass.class);
 
-    /**
-     * @param args
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         conf.set("fs.defaultFS", "hdfs://{IP}:9000");
@@ -111,7 +107,7 @@ public class mainClass {
         }));
     }
 
-    public static String getFileNameNoEx(String filename) {
+    private static String getFileNameNoEx(String filename) {
         if ((filename != null) && (filename.length() > 0)) {
             int dot = filename.lastIndexOf('.');
             if ((dot > -1) && (dot < (filename.length()))) {

@@ -53,7 +53,7 @@ public class FTPServer {
         user.setPassword(password);
         user.setHomeDirectory("/tmp/"+userName);
 
-        List<Authority> authorityList = new ArrayList<Authority>();
+        List<Authority> authorityList = new ArrayList<>();
         authorityList.add(new WritePermission());
         user.setAuthorities(authorityList);
         try {
@@ -69,7 +69,7 @@ public class FTPServer {
         user.setPassword(password);
         user.setHomeDirectory("/tmp/"+userName);
 
-        List<Authority> authorityList = new ArrayList<Authority>();
+        List<Authority> authorityList = new ArrayList<>();
         authorityList.add(new WritePermission());
         user.setAuthorities(authorityList);
         serverFactory.getUserManager().save(user);
