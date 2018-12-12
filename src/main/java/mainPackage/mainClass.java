@@ -8,6 +8,8 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 
 import java.io.File;
+import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.nio.file.*;
 import java.util.List;
 
@@ -16,7 +18,7 @@ public class mainClass {
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://{IP}:9000");
+        conf.set("fs.defaultFS", "hdfs://master:9000");
         conf.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");
         conf.set("dfs.client.block.write.replace-datanode-on-failure.policy", "NEVER");
         FileSystem hdfs = FileSystem.get(conf);
@@ -92,7 +94,11 @@ public class mainClass {
                     watchKey.reset();
                 }
             } catch (InterruptedException e) {
-                e.printStackTrace();
+                logger.fatal(e.toString());
+            } catch (UnsupportedEncodingException e) {
+                logger.fatal(e.toString());
+            } catch (IOException e) {
+                logger.fatal(e.toString());
             }
         });
         FTPGetthread.setDaemon(false);
