@@ -12,16 +12,17 @@ import org.apache.hadoop.fs.ftp.FTPException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ftpServer  {
+public class FTPServer {
     private FtpServerFactory serverFactory = new FtpServerFactory();
     private ListenerFactory listenerFactory= new ListenerFactory();
 
-    public ftpServer(){
+    public FTPServer() {
         listenerFactory.setPort(21);
         serverFactory.addListener("default", listenerFactory.createListener());
         addUserAdmin();
     }
-    public ftpServer(int port) {
+
+    public FTPServer(int port) {
         listenerFactory.setPort(port);
         serverFactory.addListener("default", listenerFactory.createListener());
         addUserAdmin();
