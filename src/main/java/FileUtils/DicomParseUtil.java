@@ -8,13 +8,15 @@ import org.dcm4che3.io.DicomOutputStream;
 import java.awt.image.Raster;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Time;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class DicomParseUtil {
+    private static org.apache.log4j.Logger logger = org.apache.log4j.Logger.getLogger(DicomParseUtil.class);
+
     private static Attributes obj=null, object =null;
     private static  DicomInputStream din;
     private static double resultFactorDix;
@@ -83,7 +85,7 @@ public class DicomParseUtil {
     private static String toElementString(String dcmele, int tag) {
         StringBuffer sb = new StringBuffer();
 
-        int TAG[] = getObject().tags();
+        int[] TAG = getObject().tags();
         StringBuffer append = sb.append(TAG)
                 .append(" [").append(getObject().getVR(tag)).append("] ")
                 .append(object.tags()).append(": ")
@@ -266,7 +268,7 @@ public class DicomParseUtil {
      * @return
      */
     public static String getStringTag(Attributes object, int Tag){
-        String tagValue2[] = object.getStrings(Tag);//Conversion table in List to String
+        String[] tagValue2 = object.getStrings(Tag);//Conversion table in List to String
         String tagValue = Arrays.asList(tagValue2).toString();
         return tagValue;
     }
@@ -279,7 +281,7 @@ public class DicomParseUtil {
      * @return
      */
     public static String getStringTag2(Attributes object, int Tag){
-        String tagValue2[] = object.getStrings(Tag);//Conversion table in List to String
+        String[] tagValue2 = object.getStrings(Tag);//Conversion table in List to String
         String tagValue =DicomParseUtil.arrayToString(tagValue2,"\\");
         return tagValue;
     }
@@ -354,7 +356,7 @@ public class DicomParseUtil {
     public String dicomTime2(Attributes object, int Tag) throws IOException{
         String tagValue =  object.getString(Tag);
         String tagValueNotDot = formatNotDot(tagValue);
-        System.out.println(FormatTime(tagValueNotDot));
+        logger.debug(FormatTime(tagValueNotDot));
         String tagTimeFomat = FormatTimes(tagValueNotDot);
         return tagTimeFomat;
     }
@@ -470,10 +472,7 @@ public class DicomParseUtil {
      * @return
      */
     public boolean isEmpty() {
-        if (getObject() == null || getObject().isEmpty()) {
-            return true;
-        }
-        return false;
+        return getObject() == null || getObject().isEmpty();
     }
 
     /**
@@ -642,8 +641,8 @@ public class DicomParseUtil {
      */
     public String[] readItem (File inputFile, int tag){
         DicomParseUtil dcm = new DicomParseUtil(inputFile);
-        Sequence seq= dcm.getObject().getSequence(tag);
-        String valueString[] = new String[seq.size()];
+        Sequence seq = getObject().getSequence(tag);
+        String[] valueString = new String[seq.size()];
         for (int i = 0; i<seq.size(); i++){
             Attributes attr =  seq.get(i);
             valueString[i] = attr.toString();
@@ -660,7 +659,7 @@ public class DicomParseUtil {
     public String tagItem(File inputFile, int tagSQ, int tag){
         String valueString = null;
         DicomParseUtil dcm = new DicomParseUtil(inputFile);
-        Sequence seq= dcm.getObject().getSequence(tagSQ);
+        Sequence seq = getObject().getSequence(tagSQ);
         Attributes attr =  seq.get(0);
         valueString = attr.getString(tag);
         return valueString;
@@ -973,7 +972,7 @@ public class DicomParseUtil {
      * @param obj
      */
     public void setObject(Attributes obj) {
-        this.obj = obj;
+        DicomParseUtil.obj = obj;
     }
 
     /**
@@ -1060,7 +1059,7 @@ public class DicomParseUtil {
      */
     public String[] getHeaderStringValues(int tagNr) {
         try {
-            System.out.println(222);
+            logger.debug(222);
             Attributes elem  = getObject();
             elem.setSpecificCharacterSet("GB18030");
             String[] val = elem.getStrings(tagNr);
@@ -1077,7 +1076,7 @@ public class DicomParseUtil {
      */
     public String getHeaderStringValue(Attributes dcmelement, int tagNr) {
         try {
-            System.out.println(333);
+            logger.debug(333);
             /* dcmelement.setSpecificCharacterSet("ISO_IR 100"); */
             dcmelement.setSpecificCharacterSet("GB18030");
             String val = dcmelement.getString(tagNr);
@@ -1105,16 +1104,17 @@ public class DicomParseUtil {
      * @param tagNr
      * @return
      */
-    public Time getHeaderTimeValue(String tagNr) {
+    public LocalTime getHeaderTimeValue(String tagNr) {
         return getHeaderTimeValue(toTagInt(tagNr));
     }
 
     /**
      * Giving time a tag
      * @param tagNr
-     * @return time
+     * @return LocalTime(Java 8 API)
      */
-    public Time getHeaderTimeValue(int tagNr) {
+
+    public LocalTime getHeaderTimeValue(int tagNr) {
         String time = getHeaderStringValue(tagNr);
         if (time.length() != 6){
             return null;
@@ -1123,14 +1123,12 @@ public class DicomParseUtil {
             int hour = Integer.parseInt(time.substring(0,2));
             int min = Integer.parseInt(time.substring(2,4));
             int sec = Integer.parseInt(time.substring(4,6));
-            return new Time(hour,min,sec);
+            return LocalTime.of(hour, min, sec);
         } catch (Exception e) {
 
         }
         return null;
     }
-
-
     /**
      * retrieves a specific HeaderTag that is inside anotehr tag
      * or "0008,0102, 0054,0220" to get the Coding Scheme Designator after View Code Sequence

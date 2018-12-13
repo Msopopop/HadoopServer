@@ -1,8 +1,7 @@
 package mainPackage;
 
 import FileUtils.DicomParseUtil;
-import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.fs.FileSystem;
+import FileUtils.HDFSUtils;
 import org.apache.log4j.Logger;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
@@ -11,26 +10,26 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.*;
+import java.time.LocalDate;
 import java.util.List;
 
 public class mainClass {
     private static Logger logger = Logger.getLogger(mainClass.class);
+    private static String USER_HOME = System.getProperty("user.home") + "/dicomFile/";
+    private static String HDFS_NODE_NAME = "master";
 
     public static void main(String[] args) throws Exception {
-        Configuration conf = new Configuration();
-        conf.set("fs.defaultFS", "hdfs://master:9000");
-        conf.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");
-        conf.set("dfs.client.block.write.replace-datanode-on-failure.policy", "NEVER");
-        FileSystem hdfs = FileSystem.get(conf);
+        HDFSUtils hdfsUtils = new HDFSUtils();
+        hdfsUtils.mkdir(HDFS_NODE_NAME, "/dicomFiles/" +
+                LocalDate.now()
+        );
 
         WatchService watchService =
                 FileSystems.getDefault().newWatchService();
         Path path = Paths.get(System.getProperty("user.home") + "/dicomFile");
         path.register(
                 watchService,
-                StandardWatchEventKinds.ENTRY_CREATE,
-                StandardWatchEventKinds.ENTRY_DELETE,
-                StandardWatchEventKinds.ENTRY_MODIFY
+                StandardWatchEventKinds.ENTRY_CREATE
         );
 
         Thread FTPGetthread = new Thread(() -> {
@@ -44,9 +43,9 @@ public class mainClass {
                         if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE
                                 && event.context().toString().endsWith(".finished")) {
                             String fileName = getFileNameNoEx(event.context().toString());
-
-                            File file = new File(fileName);
+                            File file = new File(USER_HOME + fileName);
                             DicomParseUtil d = new DicomParseUtil(file);
+
                             @SuppressWarnings("static-access")
                             Attributes attrs = d.loadDicomObject(file);
                             //输出所有属性信息
