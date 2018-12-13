@@ -218,13 +218,6 @@
             <artifactId>dcm4che-iod</artifactId>
             <version>2.0.29.v20180102_1551</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.apache.ftpserver/ftpserver-core -->
-        <dependency>
-            <groupId>org.apache.ftpserver</groupId>
-            <artifactId>ftpserver-core</artifactId>
-            <version>1.1.1</version>
-            <scope>compile</scope>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-hdfs -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
