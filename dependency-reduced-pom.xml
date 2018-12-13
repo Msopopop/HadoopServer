@@ -105,8 +105,8 @@
         <configuration>
           <instructions>
             <Import-Package>!org.apache.tools.ant.*,!org.apache.commons.lang.*,*</Import-Package>
-            <Embed-Dependency>*;scope=compile;inline=true,weasis-distributions;scope=runtime;inline=false
-            </Embed-Dependency>
+              <Embed-Dependency>*;scope=compile;inline=true,weasis-distributions;scope=runtime;inline=false
+              </Embed-Dependency>
             <Embed-StripVersion>true</Embed-StripVersion>
           </instructions>
         </configuration>
@@ -203,6 +203,18 @@
       <scope>provided</scope>
     </dependency>
   </dependencies>
+    <distributionManagement>
+        <repository>
+            <id>releases</id>
+            <name>Nexus Release Repository</name>
+            <url>http://master.msopopop.cn:8081/nexus/content/repositories/releases</url>
+        </repository>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Nexus Snapshot Repository</name>
+            <url>http://master.msopopop.cn:8081/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+    </distributionManagement>
   <properties>
     <zookeeper.version>3.4.6</zookeeper.version>
     <dcm4che.version>5.14.1</dcm4che.version>

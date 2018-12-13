@@ -156,7 +156,6 @@
             </plugin>
         </plugins>
     </build>
-
     <dependencies>
         <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-api -->
         <dependency>
@@ -315,4 +314,17 @@
             <url>http://www.dcm4che.org/maven2</url>
         </repository>
     </repositories>
+    <distributionManagement>
+        <snapshotRepository>
+            <id>snapshots</id>
+            <name>Nexus Snapshot Repository</name>
+            <url>http://master.msopopop.cn:8081/nexus/content/repositories/snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>releases</id>
+            <name>Nexus Release Repository</name>
+            <url>http://master.msopopop.cn:8081/nexus/content/repositories/releases</url>
+        </repository>
+    </distributionManagement>
+
 </project>

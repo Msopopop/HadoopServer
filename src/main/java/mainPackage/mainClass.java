@@ -15,18 +15,15 @@ import java.util.List;
 
 public class mainClass {
     private static Logger logger = Logger.getLogger(mainClass.class);
-    private static String USER_HOME = System.getProperty("user.home") + "/dicomFile/";
-    private static String HDFS_NODE_NAME = "master";
+    private static String USER_HOME = "/home/hadoop/dicomFile";
+    private static String HDFS_NODE_NAME = "master.msopopop.cn";
 
     public static void main(String[] args) throws Exception {
         HDFSUtils hdfsUtils = new HDFSUtils();
-        hdfsUtils.mkdir(HDFS_NODE_NAME, "/dicomFiles/" +
-                LocalDate.now()
-        );
 
         WatchService watchService =
                 FileSystems.getDefault().newWatchService();
-        Path path = Paths.get(System.getProperty("user.home") + "/dicomFile");
+        Path path = Paths.get(USER_HOME);
         path.register(
                 watchService,
                 StandardWatchEventKinds.ENTRY_CREATE
@@ -42,14 +39,18 @@ public class mainClass {
                         logger.debug("Event:" + event.kind() + " File affected: " + event.context());
                         if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE
                                 && event.context().toString().endsWith(".finished")) {
+                            hdfsUtils.mkdir(HDFS_NODE_NAME, "/dicomFile/" +
+                                    LocalDate.now());
+                            // Upload files to HDFS hdfs://master:9000/dicomFile/yyyy-mm-dd
                             String fileName = getFileNameNoEx(event.context().toString());
-                            File file = new File(USER_HOME + fileName);
+                            File file = new File(USER_HOME + "/" + fileName);
+                            //hdfsUtils.uploadFile(USER_HOME+"/"+fileName, "/dicomFile/" + LocalDate.now() , HDFS_NODE_NAME);
                             DicomParseUtil d = new DicomParseUtil(file);
 
                             @SuppressWarnings("static-access")
                             Attributes attrs = d.loadDicomObject(file);
                             //输出所有属性信息
-                            System.out.println("所有信息: " + attrs);
+                            logger.debug("所有信息: " + attrs);
                             //获取行
                             int row = attrs.getInt(Tag.Rows, 1);
                             //获取列

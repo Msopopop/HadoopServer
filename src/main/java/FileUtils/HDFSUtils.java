@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class HDFSUtils {
     private static Logger logger = Logger.getLogger(HDFSUtils.class);
-    //Path: hdfs://master:9000/root/dicom/a.dcm
+    //Path: hdfs://master:9000/dicomFile/a.dcm
 
     /**
      * Create a file
@@ -52,6 +52,7 @@ public class HDFSUtils {
         conf.set("dfs.client.block.write.replace-datanode-on-failure.policy", "NEVER");
         FileSystem hdfs = FileSystem.get(conf);
         Path dirPath = new Path(path);
+
         if (hdfs.mkdirs(dirPath))
             logger.info("Create DIR:" + path + " successful");
         else
@@ -74,9 +75,9 @@ public class HDFSUtils {
         conf.set("dfs.client.block.write.replace-datanode-on-failure.policy", "NEVER");
         FileSystem hdfs = FileSystem.get(conf);
 
-        Path srcrPath = new Path(src);
+        Path srcPath = new Path(src);
         Path dstPath = new Path(dst);
-        hdfs.copyFromLocalFile(false, srcrPath, dstPath);
+        hdfs.copyFromLocalFile(false, srcPath, dstPath);
         logger.info("Upload to " + conf.get("fs.default.name"));
         logger.info("------------list files------------" + "\n");
         FileStatus[] fileStatus = hdfs.listStatus(dstPath);
