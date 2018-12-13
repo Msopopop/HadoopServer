@@ -10,17 +10,19 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.nio.file.*;
+import java.time.LocalDate;
 import java.util.List;
 
 public class mainClass {
     private static Logger logger = Logger.getLogger(mainClass.class);
     private static String USER_HOME = System.getProperty("user.home") + "/dicomFile/";
     private static String HDFS_NODE_NAME = "master";
-    private static String HDFS_HOME = "hdfs://" + HDFS_NODE_NAME + ":9000/";
 
     public static void main(String[] args) throws Exception {
         HDFSUtils hdfsUtils = new HDFSUtils();
-        hdfsUtils.mkdir(HDFS_NODE_NAME, HDFS_HOME + "dicomFiles");
+        hdfsUtils.mkdir(HDFS_NODE_NAME, "/dicomFiles/" +
+                LocalDate.now()
+        );
 
         WatchService watchService =
                 FileSystems.getDefault().newWatchService();
