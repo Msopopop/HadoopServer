@@ -1,50 +1,48 @@
-package mainPackage;
+package mainThread;
 
-import FileUtils.DicomParseUtil;
-import FileUtils.HDFSUtils;
+import Utils.DicomParseUtil;
+import Utils.HDFSUtil;
+import Utils.HbaseUtil;
 import org.apache.log4j.Logger;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.nio.file.*;
 import java.time.LocalDate;
-import java.util.List;
 
 public class mainClass {
     private static Logger logger = Logger.getLogger(mainClass.class);
-    private static String USER_HOME = "/home/hadoop/dicomFile";
+    private static String USER_HOME = "E:\\hadoop";
     private static String HDFS_NODE_NAME = "master.msopopop.cn";
+    private static String HBASE_ZOOKEEPER_QUORUM = "slave.msopopop.cn";
 
     public static void main(String[] args) throws Exception {
-        HDFSUtils hdfsUtils = new HDFSUtils();
+        HDFSUtil hdfsUtil = new HDFSUtil(HDFS_NODE_NAME);
+        HbaseUtil hbaseUtil = new HbaseUtil(HBASE_ZOOKEEPER_QUORUM);
 
-        WatchService watchService =
-                FileSystems.getDefault().newWatchService();
-        Path path = Paths.get(USER_HOME);
-        path.register(
-                watchService,
-                StandardWatchEventKinds.ENTRY_CREATE
-        );
+        // Initial WatchService on PATH ${USER_HOME}
+        WatchService watchService = FileSystems.getDefault().newWatchService();
+        Paths.get(USER_HOME).register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
 
-        Thread FTPGetthread = new Thread(() -> {
+        Thread FTPListenerThread = new Thread(() -> {
             try {
                 while (true) {
                     WatchKey watchKey = watchService.take();
-                    List<WatchEvent<?>> watchEvents = watchKey.pollEvents();
-                    for (WatchEvent<?> event : watchEvents) {
+                    for (WatchEvent<?> event : watchKey.pollEvents()) {
                         //TODO 判断测试完成(通过finished后缀)
                         logger.debug("Event:" + event.kind() + " File affected: " + event.context());
-                        if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE
+
+                        if (event.kind() ==
+                                StandardWatchEventKinds.ENTRY_CREATE
                                 && event.context().toString().endsWith(".finished")) {
-                            hdfsUtils.mkdir(HDFS_NODE_NAME, "/dicomFile/" +
+                            hdfsUtil.mkdir("/dicomFile/" +
                                     LocalDate.now());
                             // Upload files to HDFS hdfs://master:9000/dicomFile/yyyy-mm-dd
                             String fileName = getFileNameNoEx(event.context().toString());
-                            File file = new File(USER_HOME + "/" + fileName);
-                            //hdfsUtils.uploadFile(USER_HOME+"/"+fileName, "/dicomFile/" + LocalDate.now() , HDFS_NODE_NAME);
+                            File file = new File(USER_HOME + "\\" + fileName);
+                            //hdfsUtils.uploadFile(USER_HOME+"/"+fileName, "/dicomFile/" + LocalDate.now());
                             DicomParseUtil d = new DicomParseUtil(file);
 
                             @SuppressWarnings("static-access")
@@ -93,17 +91,18 @@ public class mainClass {
                     }
                     watchKey.reset();
                 }
-            } catch (InterruptedException e) {
-                logger.fatal(e.toString());
-            } catch (UnsupportedEncodingException e) {
-                logger.fatal(e.toString());
-            } catch (IOException e) {
+            } catch (IOException | InterruptedException e) {
                 logger.fatal(e.toString());
             }
         });
-        FTPGetthread.setDaemon(false);
-        FTPGetthread.start();
+        FTPListenerThread.setDaemon(false);
+        FTPListenerThread.start();
 
+        // Close HDFS Client
+        hdfsUtil.close();
+        // Close Hbase Client
+        hbaseUtil.close();
+        // Destory FTPListner thread before main thread exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 watchService.close();
@@ -113,6 +112,7 @@ public class mainClass {
         }));
     }
 
+    // process file name to delete ".finished"
     private static String getFileNameNoEx(String filename) {
         if ((filename != null) && (filename.length() > 0)) {
             int dot = filename.lastIndexOf('.');

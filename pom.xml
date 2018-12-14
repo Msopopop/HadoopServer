@@ -3,9 +3,9 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.xjtu.bme</groupId>
-    <artifactId>HadoopDemo</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <groupId>edu.xjtu.bme</groupId>
+    <artifactId>HadoopSesrver</artifactId>
+    <version>1.0</version>
     <name>HadoopServer</name>
     <url>https://www.xjtu.edu.cn</url>
     <packaging>jar</packaging>
@@ -147,7 +147,7 @@
                             <transformers>
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>mainPackage.mainClass</mainClass>
+                                    <mainClass>mainThread.mainClass</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>
@@ -326,5 +326,4 @@
             <url>http://master.msopopop.cn:8081/nexus/content/repositories/releases</url>
         </repository>
     </distributionManagement>
-
 </project>
