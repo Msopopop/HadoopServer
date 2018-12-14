@@ -15,8 +15,10 @@ public class HDFSUtil {
 
     private static Configuration conf = null;
     private static FileSystem hdfs = null;
+    private static String NodeName;
 
     public HDFSUtil(String HDFSNodeName) throws IOException {
+        NodeName = HDFSNodeName;
         conf.set("fs.defaultFS", "hdfs://" + HDFSNodeName + ":9000/");
         conf.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");
         conf.set("dfs.client.block.write.replace-datanode-on-failure.policy", "NEVER");
@@ -53,7 +55,6 @@ public class HDFSUtil {
      */
     public void mkdir(String path) throws IOException {
         Path dirPath = new Path(path);
-
         if (hdfs.mkdirs(dirPath))
             logger.info("Create DIR:" + path + " successful");
         else
@@ -70,6 +71,7 @@ public class HDFSUtil {
     public void uploadFile(String src, String dst) throws IOException {
         Path srcPath = new Path(src);
         Path dstPath = new Path(dst);
+        //dst = "hdfs://" + NodeName + ":9000" + dst;
         hdfs.copyFromLocalFile(false, srcPath, dstPath);
         logger.info("Upload to " + conf.get("fs.default.name"));
         logger.info("------------list files------------" + "\n");
@@ -80,6 +82,8 @@ public class HDFSUtil {
     }
 
     public void renameFile(String oldName, String newName) throws IOException {
+        //oldName = "hdfs://" + NodeName + ":9000" + oldName;
+        //newName = "hdfs://" + NodeName + ":9000" + newName;
         Path oldPath = new Path(oldName);
         Path newPath = new Path(newName);
         if (hdfs.rename(oldPath, newPath))

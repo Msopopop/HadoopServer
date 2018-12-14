@@ -31,7 +31,6 @@ public class mainClass {
                 while (true) {
                     WatchKey watchKey = watchService.take();
                     for (WatchEvent<?> event : watchKey.pollEvents()) {
-                        //TODO 判断测试完成(通过finished后缀)
                         logger.debug("Event:" + event.kind() + " File affected: " + event.context());
 
                         if (event.kind() ==
@@ -39,14 +38,16 @@ public class mainClass {
                                 && event.context().toString().endsWith(".finished")) {
                             hdfsUtil.mkdir("/dicomFile/" +
                                     LocalDate.now());
-                            // Upload files to HDFS hdfs://master:9000/dicomFile/yyyy-mm-dd
+                            //TODO upload failed (WORKING_DIR PROBLEM)
+                            //Upload files to HDFS hdfs://master:9000/dicomFile/yyyy-mm-dd
                             String fileName = getFileNameNoEx(event.context().toString());
+                            //hdfsUtils.uploadFile(USER_HOME+"\\"+fileName, "/dicomFile/" + LocalDate.now());
+
                             File file = new File(USER_HOME + "\\" + fileName);
-                            //hdfsUtils.uploadFile(USER_HOME+"/"+fileName, "/dicomFile/" + LocalDate.now());
+                            @SuppressWarnings("static-access")
                             DicomParseUtil d = new DicomParseUtil(file);
 
-                            @SuppressWarnings("static-access")
-                            Attributes attrs = d.loadDicomObject(file);
+                            Attributes attrs = DicomParseUtil.loadDicomObject(file);
                             //输出所有属性信息
                             logger.debug("所有信息: " + attrs);
                             //获取行
@@ -92,15 +93,14 @@ public class mainClass {
                     watchKey.reset();
                 }
             } catch (IOException | InterruptedException e) {
-                logger.fatal(e.toString());
+                logger.error(e.toString());
             }
         });
         FTPListenerThread.setDaemon(false);
         FTPListenerThread.start();
 
-        // Close HDFS Client
+        // Close HDFS and Hbase Clients
         hdfsUtil.close();
-        // Close Hbase Client
         hbaseUtil.close();
         // Destory FTPListner thread before main thread exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

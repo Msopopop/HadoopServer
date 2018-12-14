@@ -3,11 +3,11 @@
          xmlns="http://maven.apache.org/POM/4.0.0"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>edu.xjtu.bme</groupId>
+    <groupId>edu.xjtu.slst.bme</groupId>
     <artifactId>HadoopSesrver</artifactId>
     <version>1.0</version>
     <name>HadoopServer</name>
-    <url>https://www.xjtu.edu.cn</url>
+    <url>https://msopopop.cn</url>
     <packaging>jar</packaging>
     <parent>
         <artifactId>weasis-parent</artifactId>

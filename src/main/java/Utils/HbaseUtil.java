@@ -199,14 +199,14 @@ public class HbaseUtil {
                 for (Cell rowKV : result.rawCells()) {
                     // Row name
                     listString.add(CellUtil.cloneRow(rowKV).toString());
-                    // Time stamp
-                    listString.add(String.valueOf(rowKV.getTimestamp()));
                     // Column family
                     listString.add(CellUtil.cloneFamily(rowKV).toString());
                     // Column name
                     listString.add(CellUtil.cloneQualifier(rowKV).toString());
                     // Value
                     listString.add(CellUtil.cloneValue(rowKV).toString());
+                    // Time stamp
+                    listString.add(String.valueOf(rowKV.getTimestamp()));
                 }
             } finally {
                 table.close();
@@ -221,7 +221,6 @@ public class HbaseUtil {
 
     /**
      * Get all records
-     *
      * @param tableName
      * @return
      * @throws IOException
@@ -240,14 +239,14 @@ public class HbaseUtil {
                     for (Cell rowKV : result.rawCells()) {
                         // Row name
                         listString.add(CellUtil.cloneRow(rowKV).toString());
-                        // Time stamp
-                        listString.add(String.valueOf(rowKV.getTimestamp()));
                         // Column family
                         listString.add(CellUtil.cloneFamily(rowKV).toString());
                         // Column name
                         listString.add(CellUtil.cloneQualifier(rowKV).toString());
                         // Value
                         listString.add(CellUtil.cloneValue(rowKV).toString());
+                        // Time stamp
+                        listString.add(String.valueOf(rowKV.getTimestamp()));
                     }
                 }
                 results.close();
