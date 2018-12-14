@@ -1,30 +1,35 @@
 package mainThread;
 
-import Utils.DicomParseUtil;
+import Utils.AttrUtil;
+import Utils.HBaseUtil;
 import Utils.HDFSUtil;
-import Utils.HbaseUtil;
+import com.sun.image.codec.jpeg.JPEGCodec;
+import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import org.apache.log4j.Logger;
-import org.dcm4che3.data.Attributes;
-import org.dcm4che3.data.Tag;
+import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
 
-import java.io.File;
-import java.io.IOException;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
+import java.awt.image.BufferedImage;
+import java.io.*;
 import java.nio.file.*;
 import java.time.LocalDate;
+import java.util.Iterator;
 
 public class mainClass {
     private static Logger logger = Logger.getLogger(mainClass.class);
-    private static String USER_HOME = "E:\\hadoop";
+    private static String FTP_ROOT_DIR = "E:\\hadoop";
     private static String HDFS_NODE_NAME = "master.msopopop.cn";
     private static String HBASE_ZOOKEEPER_QUORUM = "slave.msopopop.cn";
 
     public static void main(String[] args) throws Exception {
         HDFSUtil hdfsUtil = new HDFSUtil(HDFS_NODE_NAME);
-        HbaseUtil hbaseUtil = new HbaseUtil(HBASE_ZOOKEEPER_QUORUM);
-
-        // Initial WatchService on PATH ${USER_HOME}
+        HBaseUtil HBaseUtil = new HBaseUtil(HBASE_ZOOKEEPER_QUORUM);
+        // Initial WatchService on PATH ${FTP_ROOT_DIR}
         WatchService watchService = FileSystems.getDefault().newWatchService();
-        Paths.get(USER_HOME).register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
+        Paths.get(FTP_ROOT_DIR).
+                register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
 
         Thread FTPListenerThread = new Thread(() -> {
             try {
@@ -33,61 +38,23 @@ public class mainClass {
                     for (WatchEvent<?> event : watchKey.pollEvents()) {
                         logger.debug("Event:" + event.kind() + " File affected: " + event.context());
 
-                        if (event.kind() ==
-                                StandardWatchEventKinds.ENTRY_CREATE
+                        if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE
                                 && event.context().toString().endsWith(".finished")) {
-                            hdfsUtil.mkdir("/dicomFile/" +
-                                    LocalDate.now());
-                            //TODO upload failed (WORKING_DIR PROBLEM)
-                            //Upload files to HDFS hdfs://master:9000/dicomFile/yyyy-mm-dd
+                            // Create a new dir classified by date
+                            // hdfs://${HDFS_NODE_NAME}:9000/dicomFile/yyyy-mm-dd
+                            hdfsUtil.mkdir("/dicomFile/" + LocalDate.now());
+
+                            //TODO upload failed (slave datanode unaccessable)
+                            // Upload files to HDFS hdfs://master:9000/dicomFile/yyyy-mm-dd
                             String fileName = getFileNameNoEx(event.context().toString());
-                            //hdfsUtils.uploadFile(USER_HOME+"\\"+fileName, "/dicomFile/" + LocalDate.now());
+                            //hdfsUtil.uploadFile(FTP_ROOT_DIR+"\\"+ fileName, "/dicomFile/" + LocalDate.now());
+                            // dcm2jpg
+                            DICOM2JPG(fileName);
+                            //hdfsUtil.uploadFile(FTP_ROOT_DIR+"\\"+ getFileNameNoDCM(fileName) + ".jpg", "/dicomFile/" + LocalDate.now());
+                            // Parse dcm file and put data to HBase
+                            AttrUtil attrUploadUtil = new AttrUtil(new File(FTP_ROOT_DIR + "\\" + fileName));
+                            attrUploadUtil.UploadToHBase(HBaseUtil);
 
-                            File file = new File(USER_HOME + "\\" + fileName);
-                            @SuppressWarnings("static-access")
-                            DicomParseUtil d = new DicomParseUtil(file);
-
-                            Attributes attrs = DicomParseUtil.loadDicomObject(file);
-                            //输出所有属性信息
-                            logger.debug("所有信息: " + attrs);
-                            //获取行
-                            int row = attrs.getInt(Tag.Rows, 1);
-                            //获取列
-                            int columns = attrs.getInt(Tag.Columns, 1);
-                            //窗宽窗位
-                            float win_center = attrs.getFloat(Tag.WindowCenter, 1);
-                            float win_width = attrs.getFloat(Tag.WindowWidth, 1);
-                            logger.debug("" + "row=" + row + ",columns=" + row + ",row*columns = " + row * columns);
-                            String patientName = attrs.getString(Tag.PatientName, "");
-                            logger.debug("姓名：" + patientName);
-                            //生日
-                            String patientBirthDate = attrs.getString(Tag.PatientBirthDate, "");
-                            logger.debug("生日：" + patientBirthDate);
-                            //机构
-                            String institution = attrs.getString(Tag.InstitutionName, "");
-                            logger.debug("机构：" + institution);
-                            //站点
-                            String station = attrs.getString(Tag.StationName, "");
-                            logger.debug("站点：" + station);
-                            //制造商
-                            String Manufacturer = attrs.getString(Tag.Manufacturer, "");
-                            logger.debug("制造商：" + Manufacturer);
-                            //制造商模型
-                            String ManufacturerModelName = attrs.getString(Tag.ManufacturerModelName, "");
-                            logger.debug("制造商模型：" + ManufacturerModelName);
-                            //描述--心房
-                            String description = attrs.getString(Tag.StudyDescription, "");
-                            logger.debug("描述--心房：" + description);
-                            //描述--具体
-                            String SeriesDescription = attrs.getString(Tag.SeriesDescription, "");
-                            logger.debug("描述--具体：" + SeriesDescription);
-                            //描述时间
-                            String studyData = attrs.getString(Tag.StudyDate, "");
-                            logger.debug("描述时间：" + studyData);
-                            byte[] bytename = attrs.getBytes(Tag.PatientName);
-                            logger.debug("姓名: " + new String(bytename, "gb18030"));
-                            byte[] bytesex = attrs.getBytes(Tag.PatientSex);
-                            logger.debug("性别: " + new String(bytesex, "gb18030"));
                         }
                     }
                     watchKey.reset();
@@ -98,14 +65,17 @@ public class mainClass {
         });
         FTPListenerThread.setDaemon(false);
         FTPListenerThread.start();
+        //TODO Listener on modification to HBase database
 
-        // Close HDFS and Hbase Clients
-        hdfsUtil.close();
-        hbaseUtil.close();
+        //TODO Modify the attrs and append to dcm file
+
         // Destory FTPListner thread before main thread exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
                 watchService.close();
+                // Close HDFS and Hbase Clients
+                hdfsUtil.close();
+                HBaseUtil.close();
             } catch (Exception e) {
                 logger.error(e.toString());
             }
@@ -123,4 +93,49 @@ public class mainClass {
         return filename;
     }
 
+    // process file name to delete ".dcm"
+    private static String getFileNameNoDCM(String filename) {
+        if ((filename != null) && (filename.length() > 0)) {
+            int dot = filename.lastIndexOf('.');
+            if ((dot > -1) && (dot < (filename.length()))) {
+                return filename.substring(0, dot);
+            }
+        }
+        return filename;
+    }
+
+    // Conver DICOM to JPG File
+    // TODO Multiple-frame DCM Convert
+    private static void DICOM2JPG(String fileName) {
+        File dcmFile = new File(FTP_ROOT_DIR + "\\" + fileName);
+        Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");
+        BufferedImage jpegImage = null;
+        while (iterator.hasNext()) {
+            // Read the dcm file
+            ImageReader imageReader = iterator.next();
+            DicomImageReadParam dicomImageReadParam = (DicomImageReadParam) imageReader.getDefaultReadParam();
+            try {
+                ImageInputStream imageInputStream = ImageIO.createImageInputStream(dcmFile);
+                imageReader.setInput(imageInputStream, false);
+                jpegImage = imageReader.read(0, dicomImageReadParam);
+                imageInputStream.close();
+                if (jpegImage == null) {
+                    logger.error("Can't read image file");
+                }
+            } catch (IOException e) {
+                logger.error(e.toString());
+            }
+            // Save the jpg file
+            File jpgFile = new File(FTP_ROOT_DIR + "\\" + getFileNameNoDCM(fileName) + ".jpg");
+            try {
+                OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(jpgFile));
+                JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(outputStream);
+                encoder.encode(jpegImage);
+                outputStream.close();
+            } catch (IOException e) {
+                logger.error(e.toString());
+            }
+            logger.info("Convert complete: " + fileName);
+        }
+    }
 }

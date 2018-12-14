@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HbaseUtil {
-    private static Logger logger = Logger.getLogger(HbaseUtil.class);
+public class HBaseUtil {
+    private static Logger logger = Logger.getLogger(HBaseUtil.class);
     //Path: hdfs://master:9000/dicomFile/a.dcm
 
     private static Configuration conf = null;
@@ -23,7 +23,7 @@ public class HbaseUtil {
      * @param ZookeeperNodeName
      * @throws IOException
      */
-    public HbaseUtil(String ZookeeperNodeName) throws IOException {
+    public HBaseUtil(String ZookeeperNodeName) throws IOException {
         conf = HBaseConfiguration.create();
         conf.set("hbase.zookeeper.quorum", ZookeeperNodeName);
         conf.set("hbase.zookeeper.property.clientPort", "2181");
@@ -37,7 +37,7 @@ public class HbaseUtil {
      * @return boolean
      * @throws IOException
      */
-    public static boolean isExist(String tableName) throws IOException {
+    private boolean isExist(String tableName) throws IOException {
         return admin.tableExists(TableName.valueOf(tableName));
     }
 
@@ -48,7 +48,7 @@ public class HbaseUtil {
      * @param columnFamilies
      * @return boolean
      */
-    public static boolean createTable(String tableName, String[] columnFamilies) throws IOException {
+    public boolean createTable(String tableName, String[] columnFamilies) throws IOException {
         if (isExist(tableName)) {
             logger.error("Table: " + tableName + " already exists");
             return false;
@@ -70,7 +70,7 @@ public class HbaseUtil {
      * @param tableName
      * @throws IOException
      */
-    public static boolean deleteTable(String tableName) throws IOException {
+    public boolean deleteTable(String tableName) throws IOException {
         if (isExist(tableName)) {
             // Close the table first
             admin.disableTable(TableName.valueOf(tableName));
@@ -95,9 +95,9 @@ public class HbaseUtil {
      * @return
      * @throws IOException
      */
-    public static boolean addRow(String tableName, String row,
-                                 String columnFamily,
-                                 String column, String value) throws IOException {
+    public boolean addRow(String tableName, String row,
+                          String columnFamily,
+                          String column, String value) throws IOException {
         // Set-up connection first(NEW API)
         Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {
@@ -128,7 +128,7 @@ public class HbaseUtil {
      * @return
      * @throws IOException
      */
-    public static boolean deleteRow(String tableName, String row) throws IOException {
+    public boolean deleteRow(String tableName, String row) throws IOException {
         // Set-up connection first(NEW API)
         Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {
@@ -155,7 +155,7 @@ public class HbaseUtil {
      * @return boolean
      * @throws IOException
      */
-    public static boolean deleteRows(String tableName, String[] rows) throws IOException {
+    public boolean deleteRows(String tableName, String[] rows) throws IOException {
         // Set-up connection first(NEW API)
         Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {
@@ -186,7 +186,7 @@ public class HbaseUtil {
      * @param row
      * @throws IOException
      */
-    public static List<String> getRow(String tableName, String row) throws IOException {
+    public List<String> getRow(String tableName, String row) throws IOException {
         // Set-up connection first(NEW API)
         Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {
@@ -225,7 +225,7 @@ public class HbaseUtil {
      * @return
      * @throws IOException
      */
-    public static List<String> getAllRows(String tableName) throws IOException {
+    public List<String> getAllRows(String tableName) throws IOException {
         // Set-up connection first(NEW API)
         Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {

@@ -7,22 +7,23 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 
 public class HDFSUtil {
     private static Logger logger = Logger.getLogger(HDFSUtil.class);
     //Path: hdfs://master:9000/dicomFile/a.dcm
 
-    private static Configuration conf = null;
+    private static Configuration conf = new Configuration();
     private static FileSystem hdfs = null;
-    private static String NodeName;
+    private static String NodeName = null;
 
     public HDFSUtil(String HDFSNodeName) throws IOException {
-        NodeName = HDFSNodeName;
         conf.set("fs.defaultFS", "hdfs://" + HDFSNodeName + ":9000/");
         conf.set("fs.hdfs.impl", "org.apache.hadoop.hdfs.DistributedFileSystem");
         conf.set("dfs.client.block.write.replace-datanode-on-failure.policy", "NEVER");
         hdfs = FileSystem.get(conf);
+        NodeName = HDFSNodeName;
     }
 
     /**
@@ -69,9 +70,9 @@ public class HDFSUtil {
      * @throws IOException
      */
     public void uploadFile(String src, String dst) throws IOException {
+        dst = "hdfs://" + NodeName + ":9000" + dst;
         Path srcPath = new Path(src);
         Path dstPath = new Path(dst);
-        //dst = "hdfs://" + NodeName + ":9000" + dst;
         hdfs.copyFromLocalFile(false, srcPath, dstPath);
         logger.info("Upload to " + conf.get("fs.default.name"));
         logger.info("------------list files------------" + "\n");
@@ -81,9 +82,28 @@ public class HDFSUtil {
         }
     }
 
+    /**
+     * Upload files to HDFS from existed file
+     *
+     * @param file
+     * @param dst
+     * @throws IOException
+     */
+    public void uploadFile(File file, String dst) throws IOException {
+        dst = "hdfs://" + NodeName + ":9000" + dst;
+        Path srcPath = new Path(file.getPath());
+        Path dstPath = new Path(dst);
+        hdfs.copyFromLocalFile(false, srcPath, dstPath);
+        logger.info("Upload to " + conf.get("fs.default.name"));
+        logger.info("------------list files------------" + "\n");
+        FileStatus[] fileStatus = hdfs.listStatus(dstPath);
+        for (FileStatus files : fileStatus) {
+            logger.info(files.getPath());
+        }
+    }
     public void renameFile(String oldName, String newName) throws IOException {
-        //oldName = "hdfs://" + NodeName + ":9000" + oldName;
-        //newName = "hdfs://" + NodeName + ":9000" + newName;
+        oldName = "hdfs://" + NodeName + ":9000" + oldName;
+        newName = "hdfs://" + NodeName + ":9000" + newName;
         Path oldPath = new Path(oldName);
         Path newPath = new Path(newName);
         if (hdfs.rename(oldPath, newPath))

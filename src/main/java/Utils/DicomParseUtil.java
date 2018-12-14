@@ -35,14 +35,12 @@ public class DicomParseUtil {
     private DicomEncodingOptions encOpts = DicomEncodingOptions.DEFAULT;
 
 
-    public DicomParseUtil(File file) {
+    private DicomParseUtil(File file) {
         try {
             setObject(loadDicomObject(file));
         } catch (IOException ex) {
             Logger.getLogger(DicomParseUtil.class.getName()).log(Level.SEVERE, null, ex);
         }
-
-
     }
 
     /**
@@ -68,7 +66,7 @@ public class DicomParseUtil {
      * @param tagNr
      * @return
      */
-    public static String getHeaderName(int tagNr) {
+    private static String getHeaderName(int tagNr) {
         return dict.keywordOf(tagNr);
     }
 
@@ -138,7 +136,7 @@ public class DicomParseUtil {
      * @param valueNoun :  "dot" put  the date in format yyyy.mm.dd or dd.mm.yyyy else in format yyyy mm dd or dd mm yyyy
      * @return
      */
-    public static String FormatDate(String Numero, boolean valueBool, String valueNoun) {
+    private static String FormatDate(String Numero, boolean valueBool, String valueNoun) {
         if (Numero.matches("^[0-9]*$")) {//If la chaine de caractère est un nombre ou un chiffre
             StringBuilder r = new StringBuilder();
             if (valueBool) {//Format yyyy.mm.dd
@@ -189,7 +187,7 @@ public class DicomParseUtil {
      * @param num
      * @return
      */
-    public static String formatNotDot(String num) {
+    private static String formatNotDot(String num) {
         num = num.trim().replaceAll("[^0-9\\+]", "");
         if (num.matches("^0*$")) {
             num = "";
@@ -204,7 +202,7 @@ public class DicomParseUtil {
      * @param Numero
      * @return
      */
-    public static String FormatTime(String Numero) {
+    private static String FormatTime(String Numero) {
 
         if (Numero.matches("^[0-9]*$")) {
             StringBuilder r = new StringBuilder();
@@ -227,7 +225,7 @@ public class DicomParseUtil {
      * @param headerNr e.g. 0008,0010
      * @return 0x00080010 as int
      */
-    public static int toTagInt(String headerNr) {
+    private static int toTagInt(String headerNr) {
         return Integer.parseInt(headerNr.replaceAll(",", ""), 16);
     }
 
@@ -238,7 +236,7 @@ public class DicomParseUtil {
      * @param Numero
      * @return
      */
-    public static String FormatTimes(String Numero) {
+    private static String FormatTimes(String Numero) {
         if (Numero.matches("^[0-9].*$")) {
             StringBuilder r = new StringBuilder();
             for (int i = 0, j = Numero.length(); i < j; i++) {
@@ -313,7 +311,7 @@ public class DicomParseUtil {
      * @param separator
      * @return
      */
-    public static String arrayToString(String[] a, String separator) {
+    private static String arrayToString(String[] a, String separator) {
         StringBuffer result = new StringBuffer();
         if (a.length > 0) {
             result.append(a[0]);
@@ -369,8 +367,7 @@ public class DicomParseUtil {
                 value[i] = object.getString(tag);
                 i++;
             }
-//System.out.print(value[0]+"\n");
-//System.out.print(value[1]);
+
         }
         return value;
     }
@@ -382,7 +379,7 @@ public class DicomParseUtil {
      * @param facteur
      * @return
      */
-    public static double setFacteurPuissance(double result3, double facteur) {
+    private static double setFacteurPuissance(double result3, double facteur) {
         return resultFacteurDix = Math.pow(result3, facteur);
     }
 
@@ -401,12 +398,12 @@ public class DicomParseUtil {
      *
      * @return 0008, 0010 as String
      */
-    public static String toTagString(int tagNr) {
+    private static String toTagString(int tagNr) {
         return shortToHex(tagNr >> 16) +
                 ',' + shortToHex(tagNr);
     }
 
-    public static String shortToHex(int val) {
+    private static String shortToHex(int val) {
         char[] ch = new char[4];
         shortToHex(val, ch, 0);
         return new String(ch);
@@ -420,7 +417,7 @@ public class DicomParseUtil {
         return sb;
     }
 
-    public static void shortToHex(int val, char[] ch, int off) {
+    private static void shortToHex(int val, char[] ch, int off) {
         ch[off] = HEX_DIGITS[(val >> 12) & 0xf];
         ch[off + 1] = HEX_DIGITS[(val >> 8) & 0xf];
         ch[off + 2] = HEX_DIGITS[(val >> 4) & 0xf];
@@ -438,7 +435,7 @@ public class DicomParseUtil {
      * @return
      */
     public String dicomTime(int Tag) {
-        if (getObject().contains(Tag) == true) {
+        if (getObject().contains(Tag)) {
             String tagValue = getObject().getString(Tag);
             String tagValueNotDot = formatNotDot(tagValue);
             String tagTimeFomat = FormatTimes(tagValueNotDot);
@@ -459,7 +456,7 @@ public class DicomParseUtil {
      * @return
      */
     public String dicomTimeTotal(int Tag) {
-        if (getObject().contains(Tag) == true) {
+        if (getObject().contains(Tag)) {
             String tagValue = getObject().getString(Tag);
             String tagTimeFomat = FormatTimes(tagValue);
             return tagTimeFomat;
@@ -510,7 +507,7 @@ public class DicomParseUtil {
      * @param tagNr the Tag to read
      * @return the value as int
      */
-    public int getHeaderIntegerValue(int tagNr) {
+    private int getHeaderIntegerValue(int tagNr) {
         return getObject().getInt(tagNr, 0);
     }
 
@@ -539,7 +536,7 @@ public class DicomParseUtil {
      * @param tagNr
      * @return
      */
-    public boolean containsHeaderTag(int tagNr) {
+    private boolean containsHeaderTag(int tagNr) {
         return getObject().contains(tagNr);
     }
 
@@ -929,12 +926,12 @@ public class DicomParseUtil {
             val2 = Integer.valueOf(result).intValue();//convertie en int
             switch (val2) {
                 case 9:
-                    Double valueSpatial1 = getValeurTagItemDoubleRatio() * setFacteurPuissance(10, 1);
+                    Double valueSpatial1 = getvaleurtagitemdoubleratio() * setFacteurPuissance(10, 1);
                     setTagItemDoubleRatio(valueSpatial1);//prend la valeur
                     setNounUnitRatio("mm*mm.pixel/sec");
                     break;
                 case 8:
-                    Double valueSpatial2 = getValeurTagItemDoubleRatio() * setFacteurPuissance(10, 1);
+                    Double valueSpatial2 = getvaleurtagitemdoubleratio() * setFacteurPuissance(10, 1);
                     setTagItemDoubleRatio(valueSpatial2);//prend la valeur
                     setNounUnitRatio("mm*mm/pixel");
                     break;
@@ -967,12 +964,12 @@ public class DicomParseUtil {
             }
             switch (result) {
                 case "A":
-                    Double valueSpatial3 = getValeurTagItemDoubleRatio() * setFacteurPuissance(10, 2);
+                    Double valueSpatial3 = getvaleurtagitemdoubleratio() * setFacteurPuissance(10, 2);
                     setTagItemDoubleRatio(valueSpatial3);//prend la valeur
                     this.setNounUnitRatio("mm*mm*mm/pixel");
                     break;
                 case "B":
-                    Double valueSpatial4 = getValeurTagItemDoubleRatio() * setFacteurPuissance(10, 2);
+                    Double valueSpatial4 = getvaleurtagitemdoubleratio() * setFacteurPuissance(10, 2);
                     setTagItemDoubleRatio(valueSpatial4);//prend la valeur
                     this.setNounUnit("mm*mm*mm*pixel/sec");
                     break;
@@ -989,7 +986,7 @@ public class DicomParseUtil {
      * @param valueSpatial
      * @return
      */
-    public Double setTagItemDoubleRatio(double valueSpatial) {
+    private Double setTagItemDoubleRatio(double valueSpatial) {
         return this.valueSpatial = valueSpatial;
     }
 
@@ -998,7 +995,7 @@ public class DicomParseUtil {
      *
      * @return
      */
-    public Double getValeurTagItemDoubleRatio() {
+    private Double getvaleurtagitemdoubleratio() {
         return valueSpatial;
     }
 
@@ -1021,7 +1018,7 @@ public class DicomParseUtil {
      *
      * @return this.nounUnit = nounUnit
      */
-    public String setNounUnitRatio(String nounUnitRatio) {
+    private String setNounUnitRatio(String nounUnitRatio) {
         return this.nounUnitRatio = nounUnitRatio;
     }
 
@@ -1079,7 +1076,7 @@ public class DicomParseUtil {
      * Returns the Specific Character Set defined by Attribute Specific Character Set (0008,0005)
      * of this or the root Data Set, if this is a Nested Data Set containing in a Sequence Eleme
      */
-    public String getHeaderStringValue(int tagNr) {
+    private String getHeaderStringValue(int tagNr) {
         try {
             Attributes elem = getObject();
             elem.setSpecificCharacterSet("GB18030");
@@ -1146,7 +1143,6 @@ public class DicomParseUtil {
         return getHeaderStringValue(toTagInt(headerNr));
     }
 
-
     /**
      * Giving time a tag ("xxxx,")
      *
@@ -1163,8 +1159,7 @@ public class DicomParseUtil {
      * @param tagNr
      * @return LocalTime(Java 8 API)
      */
-
-    public LocalTime getHeaderTimeValue(int tagNr) {
+    private LocalTime getHeaderTimeValue(int tagNr) {
         String time = getHeaderStringValue(tagNr);
         if (time.length() != 6) {
             return null;
@@ -1239,7 +1234,7 @@ public class DicomParseUtil {
      * @param tagNr see dcm4che2
      * @return
      */
-    public Date getHeaderDateValue(int tagNr) {
+    private Date getHeaderDateValue(int tagNr) {
         return getObject().getDate(tagNr);
     }
 
@@ -1250,7 +1245,7 @@ public class DicomParseUtil {
      * @param dicomObj
      * @return
      */
-    public Date getHeaderDateValue(int tagNr, Attributes dicomObj) {
+    private Date getHeaderDateValue(int tagNr, Attributes dicomObj) {
         return dicomObj.getDate(tagNr);
     }
 
@@ -1280,7 +1275,6 @@ public class DicomParseUtil {
         DicomOutputStream dos = new DicomOutputStream(new File(fileOutput + ".dcm"));
         dos.setEncodingOptions(encOpts);
     }
-
 
     /**
      * Create overlay in pixelData
