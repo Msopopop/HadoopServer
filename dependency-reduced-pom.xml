@@ -106,8 +106,8 @@
         <configuration>
           <instructions>
             <Import-Package>!org.apache.tools.ant.*,!org.apache.commons.lang.*,*</Import-Package>
-              <Embed-Dependency>*;scope=compile;inline=true,weasis-distributions;scope=runtime;inline=false
-              </Embed-Dependency>
+            <Embed-Dependency>*;scope=compile;inline=true,weasis-distributions;scope=runtime;inline=false
+            </Embed-Dependency>
             <Embed-StripVersion>true</Embed-StripVersion>
           </instructions>
         </configuration>
