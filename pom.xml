@@ -159,8 +159,9 @@
                                         <Implementation-Vendor>Sun Microsystems, Inc.</Implementation-Vendor>
                                         <Extension-Name>com.sun.media.imageio</Extension-Name>
                                     </manifestEntries>
-                                    <!-- <mainClass>mainThread.mainClass</mainClass> -->
                                 </transformer>
+                                <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
                             </transformers>
                         </configuration>
                     </execution>

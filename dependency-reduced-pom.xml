@@ -135,6 +135,7 @@
                     <Extension-Name>com.sun.media.imageio</Extension-Name>
                   </manifestEntries>
                 </transformer>
+                <transformer/>
               </transformers>
             </configuration>
           </execution>

@@ -46,10 +46,8 @@ public class mainClass {
                             // Create a new dir classified by date
                             // hdfs://${HDFS_NODE_NAME}:9000/dicomFile/yyyy-mm-dd
                             hdfsUtil.mkdir(HDFS_ROOT_DIR + Date);
-
-                            //TODO uploaded failed (empty data)
                             // Upload files to hdfs://master:9000/dicomFile/yyyy-mm-dd
-                            //hdfsUtil.uploadFile(FTP_ROOT_DIR + FileName, HDFS_ROOT_DIR + Date);
+                            hdfsUtil.uploadFile(FTP_ROOT_DIR + FileName, HDFS_ROOT_DIR + Date);
 
                             AttrUtil attrUploadUtil = new AttrUtil(dcmFile);
                             attrUploadUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
@@ -78,8 +76,7 @@ public class mainClass {
                             // Upload jpg file names to HBase
                             dcm2ImageUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
                             // Upload Image File to HDFS
-
-                            // for (String filePath : jpgFileNameList) hdfsUtil.uploadFile(filePath, HDFS_ROOT_DIR + Date);
+                            for (String filePath : jpgFileNameList) hdfsUtil.uploadFile(filePath, HDFS_ROOT_DIR + Date);
 
                         }
                     }

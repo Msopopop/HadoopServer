@@ -51,6 +51,7 @@ public class DCM2ImageUtil {
             try {
                 File fileImage = new File(filePath + getFileNameNoDCM(fileName) + suffix);
                 Dcm2Jpg dcm2jpg = new Dcm2Jpg();
+                dcm2jpg.setFrame(1);
                 dcm2jpg.initImageWriter(formatName, suffix, clazz, compressionType, quality);
                 dcm2jpg.convert(fileDCM, fileImage);
                 ImageFilePathList.add(fileImage.getAbsolutePath());
