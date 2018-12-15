@@ -46,10 +46,8 @@ public class DCM2JPGUtil {
                                  String clazz,
                                  String compressionType,
                                  Number quality) {
-        int frame = attrs.getInt(Tag.NumberOfFrames, 0);
-        if (frame == 0) {
-            logger.error("Can't get numbers of frames. Parsing canceled.");
-        } else if (frame == 1) {
+        int frame = attrs.getInt(Tag.NumberOfFrames, 1);
+        if (frame == 1) {
             try {
                 File fileJPEG = new File(filePath + getFileNameNoDCM(fileName) + ".jpg");
                 Dcm2Jpg dcm2jpg = new Dcm2Jpg();

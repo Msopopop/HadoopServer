@@ -26,7 +26,7 @@ public class mainClass {
         WatchService watchService = FileSystems.getDefault().newWatchService();
         Paths.get(FTP_ROOT_DIR).
                 register(watchService, StandardWatchEventKinds.ENTRY_CREATE);
-
+        @SuppressWarnings("static-access")
         Thread FTPListenerThread = new Thread(() -> {
             try {
                 while (true) {
@@ -53,15 +53,17 @@ public class mainClass {
 
                             AttrUtil attrUploadUtil = new AttrUtil(dcmFile);
                             attrUploadUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
-
                             // Parse dcm file and put data to HBase
                             DCM2JPGUtil dcm2JPGUtil = new DCM2JPGUtil(dcmFile);
+                            dcm2JPGUtil.setPreferWindow(true);
+                            dcm2JPGUtil.setAutoWindowing(true);
                             // Convert and get all JPG file names
                             List<String> jpgFileNameList = dcm2JPGUtil.parseJPG(FTP_ROOT_DIR,
                                     null, null, null, null, 1l);
                             // Upload jpg file names to HBase
                             dcm2JPGUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
                             // Upload JPG File to HDFS
+
                             // for (String filePath : jpgFileNameList) hdfsUtil.uploadFile(filePath, HDFS_ROOT_DIR + Date);
 
                         }
@@ -89,16 +91,5 @@ public class mainClass {
                 logger.error(e.toString());
             }
         }));
-    }
-
-    // process file name to delete ".finished"
-    private static String getFileNameNoEx(String filename) {
-        if ((filename != null) && (filename.length() > 0)) {
-            int dot = filename.lastIndexOf('.');
-            if ((dot > -1) && (dot < (filename.length()))) {
-                return filename.substring(0, dot);
-            }
-        }
-        return filename;
     }
 }

@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.xjtu.slst.bme</groupId>
     <artifactId>HadoopServer</artifactId>
-    <version>1</version>
+    <version>SNAPSHOT</version>
     <name>HadoopServer</name>
     <url>https://msopopop.cn</url>
     <packaging>jar</packaging>
