@@ -1,7 +1,7 @@
 package mainThread;
 
 import Utils.AttrUtil;
-import Utils.DCM2JPGUtil;
+import Utils.DCM2ImageUtil;
 import Utils.HBaseUtil;
 import Utils.HDFSUtil;
 import org.apache.log4j.Logger;
@@ -54,15 +54,18 @@ public class mainClass {
                             AttrUtil attrUploadUtil = new AttrUtil(dcmFile);
                             attrUploadUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
                             // Parse dcm file and put data to HBase
-                            DCM2JPGUtil dcm2JPGUtil = new DCM2JPGUtil(dcmFile);
-                            dcm2JPGUtil.setPreferWindow(true);
-                            dcm2JPGUtil.setAutoWindowing(true);
-                            // Convert and get all JPG file names
-                            List<String> jpgFileNameList = dcm2JPGUtil.parseJPG(FTP_ROOT_DIR,
-                                    null, null, null, null, 1l);
+                            DCM2ImageUtil dcm2ImageUtil = new DCM2ImageUtil(dcmFile);
+                            dcm2ImageUtil.setPreferWindow(true);
+                            dcm2ImageUtil.setAutoWindowing(true);
+                            // Convert and get all Image file names
+                            List<String> jpgFileNameList = dcm2ImageUtil.parseImage(FTP_ROOT_DIR,
+                                    "JPEG", ".jpg", null, null, 1l);
+                            // Another Usage for generating png files(uncompressed image)
+                            List<String> PngFileNameList = dcm2ImageUtil.parseImage(FTP_ROOT_DIR,
+                                    "PNG", ".png", null, null, 1l);
                             // Upload jpg file names to HBase
-                            dcm2JPGUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
-                            // Upload JPG File to HDFS
+                            dcm2ImageUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
+                            // Upload Image File to HDFS
 
                             // for (String filePath : jpgFileNameList) hdfsUtil.uploadFile(filePath, HDFS_ROOT_DIR + Date);
 

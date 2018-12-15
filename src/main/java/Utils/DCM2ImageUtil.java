@@ -10,15 +10,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class DCM2JPGUtil {
-    private static org.apache.log4j.Logger logger = Logger.getLogger(DCM2JPGUtil.class);
+public class DCM2ImageUtil {
+    private static org.apache.log4j.Logger logger = Logger.getLogger(DCM2ImageUtil.class);
     private static Attributes attrs = null;
     private static String fileName = null;
     private static File fileDCM = null;
     private static boolean preferWindow = true;
     private static boolean autoWindowing = true;
-    private List<String> jpgFilePathList = new ArrayList<>();
-    private List<String> jpgFileNameList = new ArrayList<>();
+    private List<String> ImageFilePathList = new ArrayList<>();
+    private List<String> ImageFileNameList = new ArrayList<>();
 
     /**
      * Initial convert process
@@ -26,36 +26,36 @@ public class DCM2JPGUtil {
      * @param file
      * @throws IOException
      */
-    public DCM2JPGUtil(File file) throws IOException {
+    public DCM2ImageUtil(File file) throws IOException {
         attrs = DicomParseUtil.loadDicomObject(file);
         fileDCM = file;
         fileName = file.getName();
     }
 
     public static void setAutoWindowing(boolean autoWindowing) {
-        DCM2JPGUtil.autoWindowing = autoWindowing;
+        DCM2ImageUtil.autoWindowing = autoWindowing;
     }
 
     public static void setPreferWindow(boolean preferWindow) {
-        DCM2JPGUtil.preferWindow = preferWindow;
+        DCM2ImageUtil.preferWindow = preferWindow;
     }
 
-    public List<String> parseJPG(String filePath,
-                                 String formatName,
-                                 String suffix,
-                                 String clazz,
-                                 String compressionType,
-                                 Number quality) {
+    public List<String> parseImage(String filePath,
+                                   String formatName,
+                                   String suffix,
+                                   String clazz,
+                                   String compressionType,
+                                   Number quality) {
         int frame = attrs.getInt(Tag.NumberOfFrames, 1);
         if (frame == 1) {
             try {
-                File fileJPEG = new File(filePath + getFileNameNoDCM(fileName) + ".jpg");
+                File fileImage = new File(filePath + getFileNameNoDCM(fileName) + suffix);
                 Dcm2Jpg dcm2jpg = new Dcm2Jpg();
                 dcm2jpg.initImageWriter(formatName, suffix, clazz, compressionType, quality);
-                dcm2jpg.convert(fileDCM, fileJPEG);
-                jpgFilePathList.add(fileJPEG.getAbsolutePath());
-                jpgFileNameList.add(fileJPEG.getName());
-                logger.info("Convert single frame jpg File: " + fileJPEG.getName() + ".jpg successfully");
+                dcm2jpg.convert(fileDCM, fileImage);
+                ImageFilePathList.add(fileImage.getAbsolutePath());
+                ImageFileNameList.add(fileImage.getName());
+                logger.info("Convert single frame image File: " + fileImage.getName() + "." + suffix + " successfully");
             } catch (IOException e) {
                 logger.error(e.toString());
             }
@@ -65,35 +65,42 @@ public class DCM2JPGUtil {
             for (int i = 1; i <= frame; i++) {
                 try {
                     File fileJPEG = new File(filePath + getFileNameNoDCM(fileName)
-                            + "." + i + ".jpg");
+                            + "." + i + suffix);
                     Dcm2Jpg dcm2jpg = new Dcm2Jpg();
                     dcm2jpg.setFrame(i);
                     dcm2jpg.initImageWriter(formatName, suffix, clazz, compressionType, quality);
                     dcm2jpg.convert(fileDCM, fileJPEG);
-                    jpgFilePathList.add(fileJPEG.getAbsolutePath());
-                    jpgFileNameList.add(fileJPEG.getName());
-                    logger.info("Convert multiple frame" + i + " to jpg file successfully");
+                    ImageFilePathList.add(fileJPEG.getAbsolutePath());
+                    ImageFileNameList.add(fileJPEG.getName());
+                    logger.info("Convert multiple frame" + i + " to " + suffix + " file successfully");
                 } catch (IOException e) {
                     logger.error(e.toString());
                 }
             }
         }
-        return jpgFilePathList;
+        return ImageFilePathList;
     }
 
     public void UploadToHBase(HBaseUtil hBaseUtil, String Date, String HDFS_ROOT_DIR) throws IOException {
         String tableName = Date;
         String UID = attrs.getString(Tag.StudyInstanceUID, "Unknown");
-        if (!jpgFileNameList.isEmpty()) {
-            for (int i = 0; i < jpgFileNameList.size(); i++) {
+        String ImageType = ImageFileNameList.get(0).substring(ImageFileNameList.get(0).length() - 3);
+        hBaseUtil.addRow(tableName,
+                UID,
+                AttrUtil.columnFamilies[6],
+                "ImageFileType",
+                ImageType
+        );
+        if (!ImageFileNameList.isEmpty()) {
+            for (int i = 0; i < ImageFileNameList.size(); i++) {
                 hBaseUtil.addRow(tableName,
                         UID,
                         AttrUtil.columnFamilies[6],
-                        "JpgFilePath",
-                        HDFS_ROOT_DIR + tableName + jpgFileNameList.get(i));
+                        "ImageFilePath." + (i + 1),
+                        HDFS_ROOT_DIR + tableName + ImageFileNameList.get(i));
             }
         } else {
-            logger.error("No jpg files found. Upload canceled.");
+            logger.error("No image files found. Upload canceled.");
         }
     }
 
