@@ -1,27 +1,23 @@
 package mainThread;
 
 import Utils.AttrUtil;
+import Utils.DCM2JPGUtil;
 import Utils.HBaseUtil;
 import Utils.HDFSUtil;
-import com.sun.image.codec.jpeg.JPEGCodec;
-import com.sun.image.codec.jpeg.JPEGImageEncoder;
 import org.apache.log4j.Logger;
-import org.dcm4che3.imageio.plugins.dcm.DicomImageReadParam;
 
-import javax.imageio.ImageIO;
-import javax.imageio.ImageReader;
-import javax.imageio.stream.ImageInputStream;
-import java.awt.image.BufferedImage;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
-import java.util.Iterator;
+import java.util.List;
 
 public class mainClass {
     private static Logger logger = Logger.getLogger(mainClass.class);
-    private static String FTP_ROOT_DIR = "E:\\hadoop";
-    private static String HDFS_NODE_NAME = "master.msopopop.cn";
-    private static String HBASE_ZOOKEEPER_QUORUM = "slave.msopopop.cn";
+    private static String FTP_ROOT_DIR = "/home/hadoop/dicomFile/";
+    private static String HDFS_ROOT_DIR = "/dicomFile/";
+    private static String HDFS_NODE_NAME = "master";
+    private static String HBASE_ZOOKEEPER_QUORUM = "slave";
 
     public static void main(String[] args) throws Exception {
         HDFSUtil hdfsUtil = new HDFSUtil(HDFS_NODE_NAME);
@@ -39,21 +35,34 @@ public class mainClass {
                         logger.debug("Event:" + event.kind() + " File affected: " + event.context());
 
                         if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE
-                                && event.context().toString().endsWith(".finished")) {
+                                && event.context().toString().endsWith(".fin")) {
+
+                            String Date = LocalDate.now().toString(); // "2018-12-25"
+                            String FileExName = event.context().toString(); // "a.dcm.fin"
+                            String FileName = FileExName.substring(0, FileExName.length() - 4); // "a.dcm"
+                            String FullFileName = FTP_ROOT_DIR + FileName; // "home/xxx/a.dcm"
+                            File dcmFile = new File(FullFileName);
+
                             // Create a new dir classified by date
                             // hdfs://${HDFS_NODE_NAME}:9000/dicomFile/yyyy-mm-dd
-                            hdfsUtil.mkdir("/dicomFile/" + LocalDate.now());
+                            hdfsUtil.mkdir(HDFS_ROOT_DIR + Date);
 
-                            //TODO upload failed (slave datanode unaccessable)
-                            // Upload files to HDFS hdfs://master:9000/dicomFile/yyyy-mm-dd
-                            String fileName = getFileNameNoEx(event.context().toString());
-                            //hdfsUtil.uploadFile(FTP_ROOT_DIR+"\\"+ fileName, "/dicomFile/" + LocalDate.now());
-                            // dcm2jpg
-                            DICOM2JPG(fileName);
-                            //hdfsUtil.uploadFile(FTP_ROOT_DIR+"\\"+ getFileNameNoDCM(fileName) + ".jpg", "/dicomFile/" + LocalDate.now());
+                            //TODO uploaded failed (empty data)
+                            // Upload files to hdfs://master:9000/dicomFile/yyyy-mm-dd
+                            //hdfsUtil.uploadFile(FTP_ROOT_DIR + FileName, HDFS_ROOT_DIR + Date);
+
+                            AttrUtil attrUploadUtil = new AttrUtil(dcmFile);
+                            attrUploadUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
+
                             // Parse dcm file and put data to HBase
-                            AttrUtil attrUploadUtil = new AttrUtil(new File(FTP_ROOT_DIR + "\\" + fileName));
-                            attrUploadUtil.UploadToHBase(HBaseUtil);
+                            DCM2JPGUtil dcm2JPGUtil = new DCM2JPGUtil(dcmFile);
+                            // Convert and get all JPG file names
+                            List<String> jpgFileNameList = dcm2JPGUtil.parseJPG(FTP_ROOT_DIR,
+                                    null, null, null, null, 1l);
+                            // Upload jpg file names to HBase
+                            dcm2JPGUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
+                            // Upload JPG File to HDFS
+                            // for (String filePath : jpgFileNameList) hdfsUtil.uploadFile(filePath, HDFS_ROOT_DIR + Date);
 
                         }
                     }
@@ -91,51 +100,5 @@ public class mainClass {
             }
         }
         return filename;
-    }
-
-    // process file name to delete ".dcm"
-    private static String getFileNameNoDCM(String filename) {
-        if ((filename != null) && (filename.length() > 0)) {
-            int dot = filename.lastIndexOf('.');
-            if ((dot > -1) && (dot < (filename.length()))) {
-                return filename.substring(0, dot);
-            }
-        }
-        return filename;
-    }
-
-    // Conver DICOM to JPG File
-    // TODO Multiple-frame DCM Convert
-    private static void DICOM2JPG(String fileName) {
-        File dcmFile = new File(FTP_ROOT_DIR + "\\" + fileName);
-        Iterator<ImageReader> iterator = ImageIO.getImageReadersByFormatName("DICOM");
-        BufferedImage jpegImage = null;
-        while (iterator.hasNext()) {
-            // Read the dcm file
-            ImageReader imageReader = iterator.next();
-            DicomImageReadParam dicomImageReadParam = (DicomImageReadParam) imageReader.getDefaultReadParam();
-            try {
-                ImageInputStream imageInputStream = ImageIO.createImageInputStream(dcmFile);
-                imageReader.setInput(imageInputStream, false);
-                jpegImage = imageReader.read(0, dicomImageReadParam);
-                imageInputStream.close();
-                if (jpegImage == null) {
-                    logger.error("Can't read image file");
-                }
-            } catch (IOException e) {
-                logger.error(e.toString());
-            }
-            // Save the jpg file
-            File jpgFile = new File(FTP_ROOT_DIR + "\\" + getFileNameNoDCM(fileName) + ".jpg");
-            try {
-                OutputStream outputStream = new BufferedOutputStream(new FileOutputStream(jpgFile));
-                JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(outputStream);
-                encoder.encode(jpegImage);
-                outputStream.close();
-            } catch (IOException e) {
-                logger.error(e.toString());
-            }
-            logger.info("Convert complete: " + fileName);
-        }
     }
 }

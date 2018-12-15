@@ -4,8 +4,8 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>edu.xjtu.slst.bme</groupId>
-    <artifactId>HadoopSesrver</artifactId>
-    <version>1.0</version>
+    <artifactId>HadoopServer</artifactId>
+    <version>1</version>
     <name>HadoopServer</name>
     <url>https://msopopop.cn</url>
     <packaging>jar</packaging>
@@ -76,10 +76,6 @@
                     <source>${java-version}</source>
                     <target>${java-version}</target>
                     <encoding>UTF-8</encoding>
-                    <compilerArguments>
-                        <verbose/>
-                        <bootclasspath>${java.home}\jre\lib\rt.jar;${java.home}\jre\lib\jce.jar</bootclasspath>
-                    </compilerArguments>
                 </configuration>
             </plugin>
             <plugin>
@@ -223,6 +219,13 @@
             <artifactId>dcm4che-iod</artifactId>
             <version>2.0.29.v20180102_1551</version>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.dcm4che.tool/dcm4che-tool-dcm2jpg -->
+        <dependency>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-dcm2jpg</artifactId>
+            <version>5.15.0</version>
+        </dependency>
+
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-hdfs -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>

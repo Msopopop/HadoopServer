@@ -6,10 +6,9 @@ import org.dcm4che3.data.Tag;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.LocalDate;
 
 public class AttrUtil {
-    private static final String[] columnFamilies = {
+    public static final String[] columnFamilies = {
             "Patient", //[0]
             "Hospital",  //[1]
             "Study",  //[2]
@@ -20,8 +19,8 @@ public class AttrUtil {
     };
     private static org.apache.log4j.Logger logger = Logger.getLogger(AttrUtil.class);
     private static Attributes attrs = null;
-    private static String tableName = LocalDate.now().toString();
-
+    private static String tableName = null;
+    private static String fileName = null;
     /**
      * Initial parse-upload process
      *
@@ -30,6 +29,7 @@ public class AttrUtil {
      */
     public AttrUtil(File file) throws IOException {
         attrs = DicomParseUtil.loadDicomObject(file);
+        fileName = file.getName();
     }
 
     private void UploadPatientColumn(HBaseUtil hBaseUtil, String UID) throws IOException {
@@ -258,7 +258,7 @@ public class AttrUtil {
                 attrs.getString(Tag.PixelPaddingValue, ""));
     }
 
-    // TODO Graphic Annotation
+    // TODO Multiple Grahpic Annotations
     private void UploadAnnotationColumn(HBaseUtil hBaseUtil, String UID) throws IOException {
         hBaseUtil.addRow(tableName,
                 UID,
@@ -346,19 +346,41 @@ public class AttrUtil {
                 "GraphicFilled",
                 attrs.getString(Tag.GraphicFilled, ""));
     }
+
+    private void UploadHBaseColumn(HBaseUtil hBaseUtil, String UID, String HDFS_ROOT_DIR) throws IOException {
+        hBaseUtil.addRow(tableName,
+                UID,
+                columnFamilies[6],
+                "DicomFilePath",
+                HDFS_ROOT_DIR + tableName + fileName);
+        hBaseUtil.addRow(tableName,
+                UID,
+                columnFamilies[6],
+                "DicomFileName",
+                fileName);
+        hBaseUtil.addRow(tableName,
+                UID,
+                columnFamilies[6],
+                "DicomFileCreateDate",
+                tableName);
+    }
     /**
      * Upload attributes informations to hbase database
      * @param hBaseUtil
      * @throws IOException
      */
-    public void UploadToHBase(HBaseUtil hBaseUtil) throws IOException {
+
+    public void UploadToHBase(HBaseUtil hBaseUtil, String Date, String HDFS_ROOT_DIR) throws IOException {
+        tableName = Date;
         hBaseUtil.createTable(tableName, columnFamilies);
-        String UID = attrs.getString(Tag.MediaStorageSOPInstanceUID);
+        String UID = attrs.getString(Tag.StudyInstanceUID, "Unknown");
         UploadPatientColumn(hBaseUtil, UID);
         UploadHospitalColumn(hBaseUtil, UID);
         UploadStudyColumn(hBaseUtil, UID);
         UploadPhysicianColumn(hBaseUtil, UID);
         UploadImageColumn(hBaseUtil, UID);
+        UploadAnnotationColumn(hBaseUtil, UID);
+        UploadHBaseColumn(hBaseUtil, UID, HDFS_ROOT_DIR);
     }
 
     /**
@@ -409,4 +431,5 @@ public class AttrUtil {
         byte[] bytesex = attrs.getBytes(Tag.PatientSex);
         logger.debug("性别: " + new String(bytesex, "gb18030"));
     }
+
 }

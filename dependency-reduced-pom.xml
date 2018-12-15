@@ -8,9 +8,9 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
     <groupId>edu.xjtu.slst.bme</groupId>
-    <artifactId>HadoopSesrver</artifactId>
+    <artifactId>a</artifactId>
   <name>HadoopServer</name>
-    <version>1.0</version>
+    <version>1</version>
     <url>https://msopopop.cn</url>
   <licenses>
     <license>
@@ -55,10 +55,6 @@
           <source>${java-version}</source>
           <target>${java-version}</target>
             <encoding>UTF-8</encoding>
-            <compilerArguments>
-                <verbose/>
-                <bootclasspath>${java.home}\jre\lib\rt.jar;${java.home}\jre\lib\jce.jar</bootclasspath>
-            </compilerArguments>
         </configuration>
       </plugin>
       <plugin>

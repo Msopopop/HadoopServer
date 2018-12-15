@@ -2,7 +2,6 @@ package Utils;
 
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FSDataOutputStream;
-import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
 import org.apache.log4j.Logger;
@@ -73,13 +72,8 @@ public class HDFSUtil {
         dst = "hdfs://" + NodeName + ":9000" + dst;
         Path srcPath = new Path(src);
         Path dstPath = new Path(dst);
-        hdfs.copyFromLocalFile(false, srcPath, dstPath);
-        logger.info("Upload to " + conf.get("fs.default.name"));
-        logger.info("------------list files------------" + "\n");
-        FileStatus[] fileStatus = hdfs.listStatus(dstPath);
-        for (FileStatus file : fileStatus) {
-            logger.info(file.getPath());
-        }
+        hdfs.copyFromLocalFile(false, true, srcPath, dstPath);
+        logger.info("File " + src + " upload successfully");
     }
 
     /**
@@ -91,15 +85,10 @@ public class HDFSUtil {
      */
     public void uploadFile(File file, String dst) throws IOException {
         dst = "hdfs://" + NodeName + ":9000" + dst;
-        Path srcPath = new Path(file.getPath());
+        Path srcPath = new Path(file.getAbsolutePath());
         Path dstPath = new Path(dst);
-        hdfs.copyFromLocalFile(false, srcPath, dstPath);
-        logger.info("Upload to " + conf.get("fs.default.name"));
-        logger.info("------------list files------------" + "\n");
-        FileStatus[] fileStatus = hdfs.listStatus(dstPath);
-        for (FileStatus files : fileStatus) {
-            logger.info(files.getPath());
-        }
+        hdfs.copyFromLocalFile(false, true, srcPath, dstPath);
+        logger.info("File " + file.getAbsolutePath() + " upload successfully");
     }
     public void renameFile(String oldName, String newName) throws IOException {
         oldName = "hdfs://" + NodeName + ":9000" + oldName;
