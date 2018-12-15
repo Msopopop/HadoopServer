@@ -55,7 +55,7 @@ public class DCM2ImageUtil {
                 dcm2jpg.convert(fileDCM, fileImage);
                 ImageFilePathList.add(fileImage.getAbsolutePath());
                 ImageFileNameList.add(fileImage.getName());
-                logger.info("Convert single frame image File: " + fileImage.getName() + "." + suffix + " successfully");
+                logger.info("Convert single frame image File: " + fileImage.getName() + " successfully");
             } catch (IOException e) {
                 logger.error(e.toString());
             }
@@ -97,7 +97,7 @@ public class DCM2ImageUtil {
                         UID,
                         AttrUtil.columnFamilies[6],
                         "ImageFilePath." + (i + 1),
-                        HDFS_ROOT_DIR + tableName + ImageFileNameList.get(i));
+                        HDFS_ROOT_DIR + tableName + "/" + ImageFileNameList.get(i));
             }
         } else {
             logger.error("No image files found. Upload canceled.");

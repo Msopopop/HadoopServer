@@ -58,11 +58,23 @@ public class mainClass {
                             dcm2ImageUtil.setPreferWindow(true);
                             dcm2ImageUtil.setAutoWindowing(true);
                             // Convert and get all Image file names
+                            /**
+                             * The mode controlling compression settings, which must be set to
+                             * one of the four <code>MODE_*</code> values.  The default is
+                             * <code>MODE_COPY_FROM_METADATA</code>.
+                             *
+                             * <p> Subclasses that do not support compression may ignore this
+                             * value.
+                             *
+                             * @see #MODE_DISABLED (for png)
+                             * @see #MODE_EXPLICIT (for jpg)
+                             * @see #MODE_COPY_FROM_METADATA (default)
+                             * @see #MODE_DEFAULT
+                             */
                             List<String> jpgFileNameList = dcm2ImageUtil.parseImage(FTP_ROOT_DIR,
                                     "JPEG", ".jpg", null, null, 1l);
-                            // Another Usage for generating png files(uncompressed image)
-                            List<String> PngFileNameList = dcm2ImageUtil.parseImage(FTP_ROOT_DIR,
-                                    "PNG", ".png", null, null, 1l);
+                            // TODO Another Usage for generating png files(uncompressed image)
+                            // List<String> PngFileNameList = dcm2ImageUtil.parseImage(FTP_ROOT_DIR, "PNG", ".png", null, "MODE_DISABLED", 1l);
                             // Upload jpg file names to HBase
                             dcm2ImageUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
                             // Upload Image File to HDFS
