@@ -1,5 +1,3 @@
-package mainThread;
-
 import Utils.AttrUtil;
 import Utils.DCM2ImageUtil;
 import Utils.HBaseUtil;
@@ -20,6 +18,8 @@ public class mainClass {
     private static String HBASE_ZOOKEEPER_QUORUM = "slave";
 
     public static void main(String[] args) throws Exception {
+        //System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
         HDFSUtil hdfsUtil = new HDFSUtil(HDFS_NODE_NAME);
         HBaseUtil HBaseUtil = new HBaseUtil(HBASE_ZOOKEEPER_QUORUM);
         // Initial WatchService on PATH ${FTP_ROOT_DIR}
@@ -51,6 +51,8 @@ public class mainClass {
 
                             AttrUtil attrUploadUtil = new AttrUtil(dcmFile);
                             attrUploadUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
+                            List<String> tableFullInfo = HBaseUtil.getAllRows(Date);
+
                             // Parse dcm file and put data to HBase
                             DCM2ImageUtil dcm2ImageUtil = new DCM2ImageUtil(dcmFile);
                             dcm2ImageUtil.setPreferWindow(true);
@@ -95,10 +97,9 @@ public class mainClass {
         // Destory FTPListner thread before main thread exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
-                watchService.close();
-                // Close HDFS and Hbase Clients
                 hdfsUtil.close();
                 HBaseUtil.close();
+                watchService.close();
             } catch (Exception e) {
                 logger.error(e.toString());
             }

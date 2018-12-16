@@ -12,11 +12,11 @@ import java.util.List;
 
 public class HBaseUtil {
     private static Logger logger = Logger.getLogger(HBaseUtil.class);
-    //Path: hdfs://master:9000/dicomFile/a.dcm
 
     private static Configuration conf = null;
     private static Admin admin;
-
+    private static Connection connection;
+    private static Table table;
     /**
      * Initial Hbase client
      *
@@ -28,6 +28,7 @@ public class HBaseUtil {
         conf.set("hbase.zookeeper.quorum", ZookeeperNodeName);
         conf.set("hbase.zookeeper.property.clientPort", "2181");
         admin = ConnectionFactory.createConnection(conf).getAdmin();
+        connection = ConnectionFactory.createConnection(conf);
     }
 
     /**
@@ -99,19 +100,17 @@ public class HBaseUtil {
                           String columnFamily,
                           String column, String value) throws IOException {
         // Set-up connection first(NEW API)
-        Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {
-            Table table = connection.getTable(TableName.valueOf(tableName));
+            table = connection.getTable(TableName.valueOf(tableName));
             try {
                 // Add data(NEW API)
-                table.put(new Put(Bytes.toBytes(row)).addColumn(
+                Put put = new Put(Bytes.toBytes(row));
+                table.put(put.addColumn(
                         Bytes.toBytes(columnFamily),
                         Bytes.toBytes(column),
                         Bytes.toBytes(value)
                 ));
             } finally {
-                table.close();
-                connection.close();
                 logger.info("Create Row:" + row + "|" + columnFamily + "|" + column + "|" + value + " successfully");
             }
             return true;
@@ -131,16 +130,10 @@ public class HBaseUtil {
      */
     public boolean deleteRow(String tableName, String row) throws IOException {
         // Set-up connection first(NEW API)
-        Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {
-            Table table = connection.getTable(TableName.valueOf(tableName));
-            try {
-                // Delete data(NEW API)
-                table.delete(new Delete(Bytes.toBytes(row)));
-            } finally {
-                table.close();
-                connection.close();
-            }
+            table = connection.getTable(TableName.valueOf(tableName));
+            // Delete data(NEW API)
+            table.delete(new Delete(Bytes.toBytes(row)));
             return true;
         } else {
             logger.error("Table not exists. Delete row data failed");
@@ -158,10 +151,8 @@ public class HBaseUtil {
      */
     public boolean deleteRows(String tableName, String[] rows) throws IOException {
         // Set-up connection first(NEW API)
-        Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {
-            Table table = connection.getTable(TableName.valueOf(tableName));
-            try {
+            table = connection.getTable(TableName.valueOf(tableName));
                 List<Delete> deleteList = new ArrayList<Delete>();
                 for (String row : rows) {
                     Delete delete = new Delete(Bytes.toBytes(row));
@@ -169,54 +160,10 @@ public class HBaseUtil {
                 }
                 // Delete data(NEW API)
                 table.delete(deleteList);
-            } finally {
-                table.close();
-                connection.close();
-            }
             return true;
         } else {
             logger.error("Table not exists. Delete row data failed");
             return false;
-        }
-    }
-
-    /**
-     * Get row data
-     *
-     * @param tableName
-     * @param row
-     * @throws IOException
-     */
-    public List<String> getRow(String tableName, String row) throws IOException {
-        // Set-up connection first(NEW API)
-        Connection connection = ConnectionFactory.createConnection(conf);
-        if (isExist(tableName)) {
-            List<String> listString = new ArrayList<>();
-            Table table = connection.getTable(TableName.valueOf(tableName));
-            try {
-                Get get = new Get(Bytes.toBytes(row));
-                Result result = table.get(get);
-                // Results
-                for (Cell rowKV : result.rawCells()) {
-                    // Row name
-                    listString.add(CellUtil.cloneRow(rowKV).toString());
-                    // Column family
-                    listString.add(CellUtil.cloneFamily(rowKV).toString());
-                    // Column name
-                    listString.add(CellUtil.cloneQualifier(rowKV).toString());
-                    // Value
-                    listString.add(CellUtil.cloneValue(rowKV).toString());
-                    // Time stamp
-                    listString.add(String.valueOf(rowKV.getTimestamp()));
-                }
-            } finally {
-                table.close();
-                connection.close();
-            }
-            return listString;
-        } else {
-            logger.error("Table not exists. Get row data failed");
-            return null;
         }
     }
 
@@ -228,20 +175,20 @@ public class HBaseUtil {
      */
     public List<String> getAllRows(String tableName) throws IOException {
         // Set-up connection first(NEW API)
-        Connection connection = ConnectionFactory.createConnection(conf);
         if (isExist(tableName)) {
             List<String> listString = new ArrayList<>();
-            Table table = connection.getTable(TableName.valueOf(tableName));
-            try {
+            table = connection.getTable(TableName.valueOf(tableName));
                 Scan scan = new Scan();
                 ResultScanner results = table.getScanner(scan);
                 for (Result result : results) {
                     // Each row
                     for (Cell rowKV : result.rawCells()) {
                         // Row name
-                        listString.add(CellUtil.cloneRow(rowKV).toString());
+                        String rowName = CellUtil.cloneRow(rowKV).toString();
+                        listString.add(rowName);
                         // Column family
-                        listString.add(CellUtil.cloneFamily(rowKV).toString());
+                        String familyName = String.valueOf(CellUtil.cloneFamily(rowKV));
+                        listString.add(familyName);
                         // Column name
                         listString.add(CellUtil.cloneQualifier(rowKV).toString());
                         // Value
@@ -251,11 +198,6 @@ public class HBaseUtil {
                     }
                 }
                 results.close();
-            } finally {
-
-                table.close();
-                connection.close();
-            }
             return listString;
         } else {
             logger.error("Table not exists. Get all data failed");
@@ -269,6 +211,8 @@ public class HBaseUtil {
      * @throws IOException
      */
     public void close() throws IOException {
+        connection.close();
         admin.close();
+        table.close();
     }
 }
