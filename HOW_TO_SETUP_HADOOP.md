@@ -24,12 +24,12 @@
 
     假设集群master（或者叫NameNode）的私有IP为`172.19.120.35`，slave服务器群的私有IP为
 
-    ```
+    ```text
     172.19.120.36 ~ 172.19.120.135
     ```
     
     在所有集群机器的`/etc/hosts`中追加以下内容
-    ```
+    ```text
     master 172.19.120.35
     slave1 172.19.120.36
     slave2 172.19.120.37
@@ -58,7 +58,7 @@
 2. 设置权限
     
     修改所有机器的`/etc/sudoers`，添加以下内容
-    ```
+    ```text
     #For Debian
     hadoop ALL=(ALL:ALL) ALL
     
@@ -80,7 +80,7 @@
     ```
     
     对于CentOS还需要关闭selinux，修改`/etc/selinux/config`中内容如下
-    ```
+    ```text
     SELINUX=disabled
     ```
     
@@ -97,6 +97,7 @@
     2. 生成RSA Key
     
         ```shell
+        $ mkdir tmp
         $ mkdir .ssh
         $ cd ~/.ssh
         $ ssh-keygen -t rsa
@@ -128,7 +129,10 @@
 | 机器类型 | IP | 组件 |
 | :------:| :------: | :------: |
 | master | 172.19.120.35 | Hadoop、HBase、JDK |
-| slave | 172.19.120.36~135 | Hadoop、HBase、Zookeeper、JDK |
+| slave1 | 172.19.120.36 | Hadoop、HBase、Zookeeper、JDK |
+| slave2 | 172.19.120.37 | Hadoop、HBase、Zookeeper、JDK |
+| ... | ... | ... |
+| slave100 | 172.19.120.135 | Hadoop、HBase、Zookeeper、JDK |
 
 每种组件的安装路径如下，如不同请自行调整对应的配置文件：
 
@@ -145,34 +149,229 @@
 
 ### JDK
 
-在Oracle[网站][JDK]下载JDK并解压至服务器：
+在所有服务器上，下载[JDK][JDK]并解压至服务器：
 
 ```shell
 $ cd /usr/local
-$ wget https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/jdk-8u192-linux-x64
+$ sudo wget https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/jdk-8u192-linux-x64
 .tar.gz
-$ tar zxvf jdk-8u192-linux-x64.tar.gz
+$ sudo tar zxvf jdk-8u192-linux-x64.tar.gz
 ```
 
 ### Hadoop
+**在`master`服务器上**
 
-在[Apache Hadoop Releases Repo](https://archive.apache.org/dist/hadoop/common/)下载Hadoop-2.6.0并解压至服务器：
+- 使用`hadoop`用户（下同），在[Apache Hadoop Releases Repo](https://archive.apache.org/dist/hadoop/common/)下载Hadoop-2.6.0并解压至服务器：
 
-```shell
-$ cd /usr/local
-$ wget https://archive.apache.org/dist/hadoop/common/hadoop-2.6.0/hadoop-2.6.0.tar.gz
-$ tar zxvf hadoop-2.6.0.tar.gz
-```
+    ```shell
+    $ cd ~
+    $ wget https://archive.apache.org/dist/hadoop/common/hadoop-2.6.0/hadoop-2.6.0.tar.gz
+    $ tar zxvf hadoop-2.6.0.tar.gz
+    ```
+    
+- 修改`/home/hadoop/hadoop-2.6.0/etc/hadoop`目录下`hadoop-env.sh`文件内`JAVA_HOME`：
+    ```shell
+    export JAVA_HOME=/usr/local/jdk1.8.0_192
+    ```
+
+- 修改`/home/hadoop/hadoop-2.6.0/etc/hadoop`目录下`core-site.xml`内`fs.defaultFS`键值：
+    ```xml
+    <configuration>
+        <property>
+            <name>fs.defaultFS</name>
+            <value>hdfs://master:9000</value>
+        </property>
+        <property>
+            <name>hadoop.tmp.dir</name>
+            <value>/home/hadoop/tmp</value>
+        </property>
+    </configuration>
+    ```
+    
+- 修改`/home/hadoop/hadoop-2.6.0/etc/hadoop`目录下`hdfs-site.xml`内相关键值：
+    ```xml
+    <configuration>
+        <property>
+            <name>dfs.namenode.name.dir</name>
+            <value>file:/home/hadoop/hadoop-2.6.0/dfs/name</value>
+        </property>
+        <property>
+            <name>dfs.datanode.data.dir</name>
+            <value>file:/home/hadoop/hadoop-2.6.0/dfs/data</value>
+        </property>
+        <property>
+            <name>dfs.permissions</name>
+            <value>false</value>
+        </property>
+    </configuration>
+    ```
+- 修改`/home/hadoop/hadoop-2.6.0/slaves`文件，在其中加入所有slave机器的域名或名称：
+  
+  ```text
+  slave1
+  slave2
+  slave3
+  ...
+  ```
+
+- 拷贝`hadoop-2.6.0`文件夹至所有slave机器：
+
+  ```shell
+  $ scp -r /home/hadoop/hadoop-2.6.0 slave1:/home/hadoop
+  $ scp -r /home/hadoop/hadoop-2.6.0 slave2:/home/hadoop
+  $ ...
+  ```  
+
 ### HBase
 
-### Zookeeper
-    
-License
----
-EPL-2.0
+**在`master`服务器上**
 
-   [hadoop]: <https://hadoop.apache.org/>
-   [hbase]: <https://hbase.apache.org/>
-   [sonoscape]: <http://www.sonoscape.com.cn/>
-   [zookeeper]: <https://zookeeper.apache.org/>
-   [JDK]:<https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>
+- 在[Apache HBase Releases Repo](https://archive.apache.org/dist/hbase/hbase-1.0.0/hbase-1.0.0-bin.tar.gz)下载Hbase-1.0.0并解压至服务器：
+
+    ```shell
+    $ cd ~
+    $ wget https://archive.apache.org/dist/hbase/hbase-1.0.0/hbase-1.0.0-bin.tar.gz
+    $ tar zxvf hbase-1.0.0-bin.tar.gz
+    ```
+
+- 类似地，修改`/home/hadoop/hbase-1.0.0/conf/hbase-env.sh`文件中的`JAVA_HOME`与`HBASE_MANAGES_ZK`：
+
+    ```shell
+    export HBASE_MANAGES_ZK=false
+    export JAVA_HOME=/usr/local/jdk1.8.0_192
+    ```
+
+- 类似地，修改`/home/hadoop/hbase-1.0.0/conf/regionservers`文件，在其中加入所有slave机器的域名或名称：
+    
+    ```text
+    slave1
+    slave2
+    slave3
+    ...
+    ```  
+- 类似地，修改`/home/hadoop/hbase-1.0.0/conf/hbase-site.xml`文件，在其中加入相关信息：
+     
+     ```xml
+     <configuration>
+          <property>
+              <name>hbase.rootdir</name>
+              <value>hdfs://master:9000/hbase</value>
+          </property>
+          <property>
+              <name>hbase.zookeeper.quorum</name>
+              <value>slave1,slave2,...,slave100</value>
+          </property>
+          <property>
+              <name>hbase.tmp.dir</name>
+              <value>/home/hadoop/hbase-1.0.0/hbasedata</value>
+          </property>
+          <property>
+              <name>hbase.cluster.distributed</name>
+              <value>true</value>
+          </property>
+     	  <property>
+              <name>hbase.master.info.port</name>
+              <value>60010</value>
+          </property>
+     </configuration>
+     ```  
+
+- 类似地，拷贝`hbase-1.0.0`文件夹至所有slave机器：
+      
+        ```shell
+        $ scp -r /home/hadoop/hbase-1.0.0 slave1:/home/hadoop
+        $ scp -r /home/hadoop/hbase-1.0.0 slave2:/home/hadoop
+        ...
+        ```  
+
+### Zookeeper
+
+**在每台slave机器上**
+
+- 在[Apache Zookeeper Releases Repo](https://archive.apache.org/dist/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz)下载Zookeeper-3.4.6并解压至服务器：
+
+    ```shell
+    $ cd ~
+    $ wget ttps://archive.apache.org/dist/zookeeper/zookeeper-3.4.6/zookeeper-3.4.6.tar.gz
+    $ tar zxvf zookeeper-3.4.6.tar.gz
+    ```
+
+- 将`/home/hadoop/zookeeper-3.4.6/conf/zoo_sample.cfg`更名为`/home/hadoop/zookeeper-3.4.6/conf/zoo.cfg`
+
+- 修改`zoo.cfg`，修改`dataDir`路径，并加入所有`slave`节点信息：
+
+    ```text
+    dataDir=/home/hadoop/zookeeper-3.4.6/data
+    server.1=slave1:2888:3888
+    server.2=slave2:2888:3888
+    ...
+    server.100=slave100:2888:3888
+    ```
+
+- 在`/home/hadoop/zookeeper-3.4.6/data`下创建`myid`文件，
+内容应为节点编号数字；例如`slave1`的`myid`文件内容应为`1`，以此类推；
+
+
+[hadoop]: <https://hadoop.apache.org/>
+[hbase]: <https://hbase.apache.org/>
+[sonoscape]: <http://www.sonoscape.com.cn/>
+[zookeeper]: <https://zookeeper.apache.org/>
+[JDK]:<https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>
+
+### 环境变量配置
+
+- **在`master`节点**的`/etc/profile`文件中追加以下内容：
+    ```shell
+    # JAVA PATH
+    JAVA_HOME=/usr/local/jdk1.8.0_192
+    JRE_HOME=/usr/local/jdk1.8.0_192/jre
+    CLASS_PATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib
+    PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin  
+    
+    # HADOOP PATH
+    HADOOP_HOME=/home/hadoop/hadoop-2.6.0
+    PATH=$PATH:$HADOOP_HOME/bin
+    
+    # HBASE PATH
+    HBASE_HOME=/home/hadoop/hbase-1.0.0
+    PATH=$PATH:$HBASE_HOME/bin
+    
+    export JAVA_HOME JRE_HOME CLASS_PATH HADOOP_HOME HBASE_HOME PATH   
+    export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib/native"
+    ```
+
+- **在`slave`节点**的`/etc/profile`文件中追加以下内容：
+    ```shell
+    # JAVA PATH
+    JAVA_HOME=/usr/local/jdk1.8.0_192
+    JRE_HOME=/usr/local/jdk1.8.0_192/jre
+    CLASS_PATH=.:$JAVA_HOME/lib/dt.jar:$JAVA_HOME/lib/tools.jar:$JRE_HOME/lib
+    export PATH=$PATH:$JAVA_HOME/bin:$JRE_HOME/bin
+    
+    # HADOOP PATH
+    HADOOP_HOME=/home/hadoop/hadoop-2.6.0
+    PATH=$PATH:$HADOOP_HOME/bin
+    
+    # HBASE PATH
+    HBASE_HOME=/home/hadoop/hbase-1.0.0
+    PATH=$PATH:$HBASE_HOME/bin
+    
+    # Zookeeper PATH
+    ZOOKEEPER_HOME=/home/hadoop/zookeeper-3.4.6
+    PATH=$PATH:$ZOOKEEPER_HOME/bin:$ZOOKEEPER_HOME/conf
+    
+    export JAVA_HOME JRE_HOME CLASS_PATH HADOOP_HOME HBASE_HOME ZOOKEEPER_HOME PATH
+    export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib/native
+    ```
+    
+- 执行以下命令使环境变量修改生效:
+    ```shell
+    $ source /etc/profile
+    ```
+
+- 运行`java -version`命令，应该能够得到类似的信息：
+    ```text
+    java version "1.8.0_192"
+    Java(TM) SE Runtime Environment (build 1.8.0_192-b12)
+    Java HotSpot(TM) 64-Bit Server VM (build 25.192-b12, mixed mode)
+    ```

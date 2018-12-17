@@ -1,10 +1,10 @@
-# 基于Hadoop的DICOM信息解析、存储系统
+# 基于Hadoop的DICOM信息解析系统
 
-[![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0) [![Build Status](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer.svg?branch=master)](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer)[![codebeat badge](https://codebeat.co/badges/74dffbf8-42a7-4029-b69f-bc1697e70b5f)](https://codebeat.co/projects/github-com-sonoscape-hadoopproject-xjtu-hadoopserver-master)
+[![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0) [![Build Status](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer.svg?branch=master)](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer) [![codebeat badge](https://codebeat.co/badges/74dffbf8-42a7-4029-b69f-bc1697e70b5f)](https://codebeat.co/projects/github-com-sonoscape-hadoopproject-xjtu-hadoopserver-master) [![codecov](https://codecov.io/gh/sonoscape-HadoopProject-xjtu/HadoopServer/branch/master/graph/badge.svg)](https://codecov.io/gh/sonoscape-HadoopProject-xjtu/HadoopServer)
 
 ## 特性
 
-该系统是基于Hadoop开发的Dicom解析系统，能够实现以下功能
+该项目是基于Hadoop开发的Dicom解析系统，能够实现以下功能
 
   - 接受客户端发送的DICOM文件（通过监听特定文件路径），同时针对DICOM文件生成JPEG图片
   - 将DICOM文件以及JPEG图片存放到HDFS中
@@ -13,56 +13,76 @@
   
 > 医疗数位影像传输协定（DICOM）是一组通用的标准协定，在对于医学影像的处理、储存、打印、传输上。它包含了档案格式的定义及网络通信协定。DICOM是以TCP/IP为基础的应用协定，并以TCP/IP联系各个系统。两个能接受DICOM格式的医疗仪器间，可借由DICOM格式的档案，来接收与交换影像及病人资料。 
   
-  该系统旨在能与所有兼容DICOM协议的设备兼容互通。
+  该项目旨在能与所有兼容DICOM协议的设备兼容互通。
 
 ## 配置环境
 
 请参照[环境搭建指南](/HOW_TO_SETUP_HADOOP.md)。
 
-## 编译及生成
+## 编译及运行
 
-本项目基于[Maven](https://maven.apache.org/)，您可以直接使用Maven来生成可执行的jar包
+本项目基于[Maven](https://maven.apache.org/)，您可以直接使用Maven来生成可执行的jar包。
 
-```shell
-$ git clone
-```
+1. 从Github上获取源码
 
-### Development
+    ```shell
+    $ git cone https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer.git
+    $ cd HadoopServer
+    $ git submodule update --init
+    ```
 
-Want to contribute? Great!
+2. 使用IntelliJ IDEA（推荐）或Eclipse等IDE导入maven工程
 
-Dillinger uses Gulp + Webpack for fast developing.
-Make a change in your file and instantanously see your updates!
+3. 编译及打包
 
-Open your favorite Terminal and run these commands.
+    ```shell
+    $ maven clean
+    $ maven validate
+    $ maven package -Dmaven.test.skip=true
+    ```
+    
+    该命令会在`/target`目录下生成可执行的`HadoopServer.jar`，您可以直接将其上传至服务器。
+    
+4.  运行项目
+    
+    您可以直接使用java运行本程序。在运行前请检查[mainClass.java](/src/main/java/mainClass.java)相关静态变量
+    
+    ```java
+    public class mainClass {
+    //...
 
-First Tab:
-```sh
-$ node app
-```
+    //GSPS文件存放目录，需要有r权限
+    String GSPS_ROOT_DIR = "/home/verizonwu/GSPSFile/"; 
+    //DICOM文件存放目录，需要有r权限
+    String DICOM_ROOT_DIR = "/home/hadoop/dicomFile/";
 
-Second Tab:
-```sh
-$ gulp watch
-```
+    //GSPS文件在HDFS的存放目录
+    String HDFS_ROOT_DIR_DICOM = "/dicomFile/";
+    //DICOM文件在HDFS的存放目录
+    String HDFS_ROOT_DIR_GSPS = "/GSPSFile/";
 
-(optional) Third:
-```sh
-$ karma test
-```
-### Building for source
-For production release:
-```sh
-$ gulp build --prod
-```
-Generating pre-built zip archives for distribution:
-```sh
-$ gulp build dist --prod
-```
+    //NameNode服务器的域名，用逗号分隔
+    String HDFS_NODE_NAME = "master";
+    //DataNode服务器的域名，用逗号分隔
+    String HBASE_ZOOKEEPER_QUORUM = "slave1,slave2,slave3";
+    }
+    ```
+    
+    及[log4j.properties](/src/main/resources/log4j.properties)是否配置正确；如果log路径或log文件没有写权限可能会导致程序不能正常运行。
+    
+    用java运行本程序：
+    ```shell
+    $ java -jar HadoopServer.jar
+    ```
+    
+    也可以远程调试本程序。
+    ```shell
+    $ java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005 -jar HadoopServer.jar
+    ```
 
-## Todos
+## 未来计划
 
- 该系统将来会实现的功能
+ 该项目将来会实现的功能：
    - SCP服务器功能
    - 针对多帧DICOM文件生成多帧JPEG图片
    - 追加多次GSPS标记
@@ -79,10 +99,10 @@ $ gulp build dist --prod
 * [weasis] - Weasis is a DICOM viewer available as a desktop application or as a web-based application.
 * [dcm4che] - A collection of open source applications and utilities for the healthcare enterprise.
 * [log4j] - Apache Log4j 2 is an upgrade to Log4j that provides significant improvements over its predecessor, Log4j 1.x, and provides many of the improvements available in Logback while fixing some inherent problems in Logback’s architecture.
-* [Gaoyp12138-dicom] - 提供了[DicomParseUtils.java](/src/main/java/Utils/DicomParseUtil.java)的大部分内容
+* [Gaoyp12138-dicom] - 提供了[DicomParseUtils.java](/src/main/java/Utils/DicomParseUtil.java)的部分代码
 * [Dillinger] - A awesome markdown editor.
 
-本项目还得到了西安交通大学[生命科学与技术学院][slst]、[深圳开立生物技术有限公司][sonoscape]相关人员的指导，在此一并表示感谢。
+本项目还得到了西安交通大学 [生命科学与技术学院][slst]、[深圳开立生物技术有限公司][sonoscape]相关人员的指导，在此一并表示感谢。
 
 License
 ---
@@ -99,5 +119,3 @@ EPL-2.0
    [Dillinger]: <https://dillinger.io>
    [slst]:<http://slst.xjtu.edu.cn>
    [JDK]:<https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>
-   [pom]: <https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/blob/master/pom.xml#L124>
-   [DicomParseUtils]: <https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/blob/master/src/main/java/Utils/DicomParseUtil.java>
