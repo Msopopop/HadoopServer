@@ -5,7 +5,6 @@ import Utils.HDFSUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
 import java.util.List;
@@ -61,8 +60,6 @@ public class mainClass {
                             // Convert and get all Image file names
                             List<String> jpgFileNameList = dcm2ImageUtil.parseImage(DICOM_ROOT_DIR,
                                     "JPEG", ".jpg", null, null, 1l);
-                            // TODO Another Usage for generating png files(uncompressed image)
-                            // List<String> PngFileNameList = dcm2ImageUtil.parseImage(FTP_ROOT_DIR, "PNG", ".png", null, "MODE_DISABLED", 1l);
                             // Upload jpg file names to HBase
                             dcm2ImageUtil.UploadToHBase(HBaseUtil, TABLE_NAME, HDFS_ROOT_DIR_DICOM);
                             // Upload Image File to HDFS
@@ -74,7 +71,7 @@ public class mainClass {
                     }
                     watchKey.reset();
                 }
-            } catch (IOException | InterruptedException e) {
+            } catch (Exception e) {
                 logger.error(e.toString());
             }
         });
@@ -94,36 +91,35 @@ public class mainClass {
                         for (WatchEvent<?> event : watchKey.pollEvents()) {
                             if (event.kind() == StandardWatchEventKinds.ENTRY_CREATE
                                     && event.context().toString().endsWith(".GSPS")) {
-
                                 String Date = LocalDate.now().toString(); // "2018-12-25"
                                 String FileExName = event.context().toString(); // "a.dcm.GSPS"
                                 String FileName = FileExName.substring(0, FileExName.length() - 5); // "a.dcm"
                                 String FullFileName = GSPS_ROOT_DIR + FileName; // "home/xxx/a.dcm"
-                                File dcmFile = new File(FullFileName);
+                                File GSPSFile = new File(FullFileName);
                                 hdfsUtil.mkdir(HDFS_ROOT_DIR_GSPS + Date);
                                 // Upload files to hdfs://master:9000/GSPSFile/yyyy-mm-dd
                                 hdfsUtil.uploadFile(GSPS_ROOT_DIR + FileName, HDFS_ROOT_DIR_GSPS + Date);
 
-                                AttrUtil attrUploadUtil = new AttrUtil(dcmFile);
+                                AttrUtil attrUploadUtil = new AttrUtil(GSPSFile);
                                 attrUploadUtil.UploadToHBase(HBaseUtil, TABLE_NAME, HDFS_ROOT_DIR_GSPS, false);
                             }
                         }
                         watchKey.reset();
                     }
-                } catch (IOException | InterruptedException e) {
+                } catch (Exception e) {
                     logger.error(e.toString());
                 }
             });
             GSPSListenerThread.setDaemon(false);
             GSPSListenerThread.start();
         }
-        // Destory FTPListner thread before main thread exit
+        // Close listeners thread before main thread exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
             try {
-                hdfsUtil.close();
-                HBaseUtil.close();
                 DicomFileWatchService.close();
                 GSPSFileWatchService.close();
+                hdfsUtil.close();
+                HBaseUtil.close();
             } catch (Exception e) {
                 logger.error(e.toString());
             }

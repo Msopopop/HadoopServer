@@ -260,12 +260,22 @@ public class AttrUtil {
     }
 
     // TODO Multiple Grahpic Annotations
-    private void UploadAnnotationColumn(HBaseUtil hBaseUtil, String UID) throws IOException {
+    private void UploadAnnotationColumn(HBaseUtil hBaseUtil, String UID, String HDFS_ROOT_DIR) throws IOException {
         hBaseUtil.addRow(tableName,
                 UID,
-                columnFamilies[5],
-                "GraphicAnnotationSequence",
-                attrs.getString(Tag.GraphicAnnotationSequence, ""));
+                columnFamilies[6],
+                "GSPSFilePath",
+                HDFS_ROOT_DIR + tableName + "/" + fileName);
+        hBaseUtil.addRow(tableName,
+                UID,
+                columnFamilies[6],
+                "GSPSFileName",
+                fileName);
+        hBaseUtil.addRow(tableName,
+                UID,
+                columnFamilies[6],
+                "GSPSFileCreateDate",
+                tableName);
         hBaseUtil.addRow(tableName,
                 UID,
                 columnFamilies[5],
@@ -387,7 +397,7 @@ public class AttrUtil {
             UploadImageColumn(hBaseUtil, UID);
             UploadHBaseColumn(hBaseUtil, UID, HDFS_ROOT_DIR);
         } else {
-            UploadAnnotationColumn(hBaseUtil, UID);
+            UploadAnnotationColumn(hBaseUtil, UID, HDFS_ROOT_DIR);
         }
     }
 
