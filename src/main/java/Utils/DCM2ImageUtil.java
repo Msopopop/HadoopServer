@@ -87,14 +87,21 @@ public class DCM2ImageUtil {
     public void UploadToHBase(HBaseUtil hBaseUtil, String Date, String HDFS_ROOT_DIR) throws IOException {
         String tableName = Date;
         String UID = attrs.getString(Tag.StudyInstanceUID, "Unknown");
-        String ImageType = ImageFileNameList.get(0).substring(ImageFileNameList.get(0).length() - 3);
-        hBaseUtil.addRow(tableName,
-                UID,
-                AttrUtil.columnFamilies[6],
-                "ImageFileType",
-                ImageType
-        );
-        if (!ImageFileNameList.isEmpty()) {
+
+        if ((ImageFileNameList != null) && (!ImageFileNameList.isEmpty())) {
+            String ImageType = ImageFileNameList.get(0).substring(ImageFileNameList.get(0).length() - 3);
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    AttrUtil.columnFamilies[6],
+                    "ImageAvailable",
+                    "Yes"
+            );
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    AttrUtil.columnFamilies[6],
+                    "ImageFileType",
+                    ImageType
+            );
             for (int i = 0; i < ImageFileNameList.size(); i++) {
                 hBaseUtil.addRow(tableName,
                         UID,
