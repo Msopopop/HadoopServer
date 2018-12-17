@@ -63,6 +63,8 @@ public class DCM2ImageUtil {
         }
         // For multiple frames
         else {
+            //TODO libopencv_java.so not found
+            /*
             for (int i = 1; i <= frame; i++) {
                 try {
                     File fileJPEG = new File(filePath + getFileNameNoDCM(fileName)
@@ -77,7 +79,7 @@ public class DCM2ImageUtil {
                 } catch (IOException e) {
                     logger.error(e.toString());
                 }
-            }
+            }*/
         }
         return ImageFilePathList;
     }

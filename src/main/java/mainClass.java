@@ -78,7 +78,8 @@ public class mainClass {
                             // Upload jpg file names to HBase
                             dcm2ImageUtil.UploadToHBase(HBaseUtil, Date, HDFS_ROOT_DIR);
                             // Upload Image File to HDFS
-                            for (String filePath : jpgFileNameList) hdfsUtil.uploadFile(filePath, HDFS_ROOT_DIR + Date);
+                            if (null != jpgFileNameList && (!jpgFileNameList.isEmpty()))
+                                for (String filePath : jpgFileNameList) hdfsUtil.uploadFile(filePath, HDFS_ROOT_DIR + Date);
 
                         }
                     }

@@ -29,6 +29,7 @@ public class AttrUtil {
      */
     public AttrUtil(File file) throws IOException {
         attrs = DicomParseUtil.loadDicomObject(file);
+        attrs.setSpecificCharacterSet("GBK");
         fileName = file.getName();
     }
 
@@ -352,7 +353,7 @@ public class AttrUtil {
                 UID,
                 columnFamilies[6],
                 "DicomFilePath",
-                HDFS_ROOT_DIR + tableName + fileName);
+                HDFS_ROOT_DIR + tableName + "/" + fileName);
         hBaseUtil.addRow(tableName,
                 UID,
                 columnFamilies[6],

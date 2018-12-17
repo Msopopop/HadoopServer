@@ -55,7 +55,6 @@ public class DicomParseUtil {
             return null;
         } else {
             DicomInputStream dis = new DicomInputStream(f);
-            //attr.setSpecificCharacterSet("GBK");
             return dis.readDataset(-1, -1);
         }
     }
