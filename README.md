@@ -1,53 +1,87 @@
-# 基于Hadoop与HBase集群的Dicom解析系统
+# 基于Hadoop/HBase/Zookeeper的DICOM信息解析、存储系统
 
 [![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0) [![Build Status](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer.svg?branch=master)](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer)
 
+## 特性
+
 该系统是基于Hadoop开发的Dicom解析系统，能够实现以下功能
-  - 接受客户端发送的DICOM文件（通过FTP服务器），同时针对DICOM文件生成单张或多张JPEG图片
+
+  - 接受客户端发送的DICOM文件（通过监听特定文件路径），同时针对DICOM文件生成JPEG图片
   - 将DICOM文件以及JPEG图片存放到HDFS中
-  - 解析DICOM文件将患者信息存入HBase
+  - 解析DICOM文件并将信息存入HBase
+  - 解析后端传送的GSPS文件并将标注信息存入对应DICOM文件的HBase中
+  
+> 医疗数位影像传输协定（DICOM）是一组通用的标准协定，在对于医学影像的处理、储存、打印、传输上。它包含了档案格式的定义及网络通信协定。DICOM是以TCP/IP为基础的应用协定，并以TCP/IP联系各个系统。两个能接受DICOM格式的医疗仪器间，可借由DICOM格式的档案，来接收与交换影像及病人资料。 
+  
+  该系统旨在能与所有兼容DICOM协议的设备兼容互通。
+  
+## 开源组件
 
-> Apache Hadoop是一款支持数据密集型分布式应用程序并以Apache 2.0许可协议发布的开源软件框架。
-> 它支持在商品硬件构建的大型集群上运行的应用程序。Hadoop是根据谷歌公司发表的MapReduce和Google文件系统的论文自行实现而成。所有的Hadoop模块都有一个基本假设，即硬件故障是常见情况，应该由框架自动处理。 
-> Markdown-formatted document should be
-> publishable as-is, as plain text, without
-> looking like it's been marked up with tags
-> or formatting instructions.
+该程序使用了以下开源组件（见[pox.xml][pom]）
 
-This text you see here is *actually* written in Markdown! To get a feel for Markdown's syntax, type some text into the left window and watch the results in the right.
+* [hadoop] - The Apache Hadoop software library is a framework that allows for the distributed processing of large data sets across clusters of computers using simple programming models.
+* [hbase] - Apache HBase™ is the Hadoop database, a distributed, scalable, big data store. 
+* [zookeeper] - Apache ZooKeeper is an effort to develop and maintain an open-source server which enables highly reliable distributed coordination.
+* [weasis] - Weasis is a DICOM viewer available as a desktop application or as a web-based application.
+* [dcm4che] - A collection of open source applications and utilities for the healthcare enterprise.
+* [log4j] - Apache Log4j 2 is an upgrade to Log4j that provides significant improvements over its predecessor, Log4j 1.x, and provides many of the improvements available in Logback while fixing some inherent problems in Logback’s architecture.
+* [Gaoyp12138-dicom] - 提供了[DicomParseUtils.java][DicomParseUtils]的大部分内容
+* [Dillinger] - A awesome markdown editor.
 
-### 依赖
+本项目的所有代码托管在Github公开Repo上。
 
-该程序依赖Maven打包，并使用了以下开源组件（见[pom.xml]）
+## 搭建Hadoop集群
 
-* [Weasis] - Weasis is a DICOM viewer available as a desktop application or as a web-based application.
-* [Dcm4che] - A collection of open source applications and utilities for the healthcare enterprise
+该程序需要[Hadoop]、[Hbase]、[Zookeeper]、[JDK](>= 8)才能正常工作。
 
-And of course Dillinger itself is open source with a [public repository][dill]
- on GitHub.
+###前期工作
 
-### Installation
+####网络配置
 
-Dillinger requires [Node.js](https://nodejs.org/) v4+ to run.
+设集群master的IP为*172.19.120.35*，slave服务器的服务器为*172.19.120.36*,*172.19.120.37*,*172.19.120.38*
 
-Install the dependencies and devDependencies and start the server.
-
+在所有集群机器的*hosts*内追加以下内容
 ```sh
-$ cd dillinger
-$ npm install -d
-$ node app
+master 172.19.120.35
+slave1 172.19.120.36
+slave2 172.19.120.37
+slave3 172.19.120.38
 ```
 
-For production environments...
+####安装JDK
+
+在Oracle[网站][JDK]下载JDK并解压至服务器：
 
 ```sh
-$ npm install --production
-$ NODE_ENV=production node app
+$ cd /usr/local
+$ wget https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/jdk-8u192-linux-x64.tar.gz
+$ tar zxvf jdk-8u192-linux-x64.tar.gz
+```
+
+设置*JAVA_HOME*、*CLASSPATH*、*PATH*等环境变量，在
+
+```sh
+/etc/profile
+```
+
+中追加以下内容
+
+```sh
+asad
+```
+
+不要忘记重新加载环境变量
+
+```sh
+$ source /etc/profile
 ```
 
 ### Plugins
 
-Dillinger is currently extended with the following plugins. Instructions on how to use them in your own application are linked below.
+Dillinger 
+
+is currently extended with the following plugins. Instructions on how to use them in your own application are 
+linked below.
 
 | Plugin | README |
 | ------ | ------ |
@@ -82,7 +116,7 @@ $ gulp watch
 ```sh
 $ karma test
 ```
-#### Building for source
+### Building for source
 For production release:
 ```sh
 $ gulp build --prod
@@ -91,38 +125,27 @@ Generating pre-built zip archives for distribution:
 ```sh
 $ gulp build dist --prod
 ```
-### Docker
-Dillinger is very easy to install and deploy in a Docker container.
 
-By default, the Docker will expose port 8080, so change this within the Dockerfile if necessary. When ready, simply use the Dockerfile to build the image.
+## Todos
 
-```sh
-cd dillinger
-docker build -t joemccann/dillinger:${package.json.version} .
-```
-This will create the dillinger image and pull in the necessary dependencies. Be sure to swap out `${package.json.version}` with the actual version of Dillinger.
+ 该系统将来会实现的功能
+   - SCP服务器功能
+   - 针对多帧DICOM文件生成多帧JPEG图片
+   - 追加多次GSPS标记
+   - 对标记内容做数据挖掘
 
-Once done, run the Docker image and map the port to whatever you wish on your host. In this example, we simply map port 8000 of the host to port 8080 of the Docker (or whatever port was exposed in the Dockerfile):
+##License
 
-```sh
-docker run -d -p 8000:8080 --restart="always" <youruser>/dillinger:${package.json.version}
-```
-
-Verify the deployment by navigating to your server address in your preferred browser.
-
-```sh
-127.0.0.1:8000
-```
-
-### Todos
-
- - Write MORE Tests
- - Add Night Mode
-
-License
-----
 EPL-2.0
 
    [Weasis]: <https://github.com/nroduit/Weasis>
    [Dcm4che]: <https://www.dcm4che.org/>
-   [pom.xml]: <https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/blob/master/pom.xml>
+   [log4j]: <https://logging.apache.org/log4j/2.x/>
+   [hadoop]: <https://hadoop.apache.org/>
+   [hbase]: <https://hbase.apache.org/>
+   [zookeeper]: <https://zookeeper.apache.org/>
+   [Gaoyp12138-dicom]: <https://github.com/Gaoyp12138/dicom>
+   [Dillinger]: <https://dillinger.io>
+   [JDK]:<https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>
+   [pom]: <https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/blob/master/pom.xml>
+   [DicomParseUtils]: <https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/blob/master/src/main/java/Utils/DicomParseUtil.java>

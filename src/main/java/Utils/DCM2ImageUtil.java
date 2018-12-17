@@ -110,12 +110,6 @@ public class DCM2ImageUtil {
                         HDFS_ROOT_DIR + tableName + "/" + ImageFileNameList.get(i));
             }
         } else {
-            hBaseUtil.addRow(tableName,
-                    UID,
-                    AttrUtil.columnFamilies[6],
-                    "ImageAvailable",
-                    "No"
-            );
             logger.error("No image files found. Upload canceled.");
         }
     }
