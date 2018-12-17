@@ -1,6 +1,6 @@
 # 基于Hadoop的DICOM信息解析、存储系统
 
-[![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0) [![Build Status](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer.svg?branch=master)](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer)
+[![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0) [![Build Status](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer.svg?branch=master)](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer)[![codebeat badge](https://codebeat.co/badges/74dffbf8-42a7-4029-b69f-bc1697e70b5f)](https://codebeat.co/projects/github-com-sonoscape-hadoopproject-xjtu-hadoopserver-master)
 
 ## 特性
 
@@ -15,169 +15,17 @@
   
   该系统旨在能与所有兼容DICOM协议的设备兼容互通。
 
-## 搭建Hadoop集群
+## 配置环境
 
-该程序需要[Hadoop]、[Hbase]、[Zookeeper]、[JDK](>= 8)才能正常工作。
+请参照[环境搭建指南](/HOW_TO_SETUP_HADOOP.md)。
 
-该程序在*CentOS 7*及*Debian 8*上部署测试成功。
+## 编译及生成
 
-### 前期工作
-#### 网络配置
+本项目基于[Maven](https://maven.apache.org/)，您可以直接使用Maven来生成可执行的jar包
 
-若使用IP配置，所有机器的私有地址需要为静态地址。
-1. 修改主机名
-
-    ```sh
-    sudo hostnamectl set-hostname HOST_NAME
-    ```
-    所有机器（master及slave）都要修改，此步骤可以省略，但是要在`/etc/hosts`中加入机器名所对应的私有IP。
-2. 设置Hosts
-
-    假设集群master的私有IP为`172.19.120.35`，slave服务器群的私有IP为
-
-    ```
-    172.19.120.36 ~ 172.19.120.135
-    ```
-    
-    在所有集群机器的`/etc/hosts`中追加以下内容
-    ```
-    master 172.19.120.35
-    slave1 172.19.120.36
-    slave2 172.19.120.37
-    slave3 172.19.120.38
-    ...
-    slave100 172.19.120.135
-    
-    #如果你没有设置hostname
-    HOST_NAME 127.19.120.xx
-    ```
-    
-#### 用户配置
-
-1. 建立用户及组
-
-    可以建立一个专门的用户来运行Hadoop、HBase、Zookeeper及相关进程：
-    
-    此步骤可省略。
-    ```sh
-    $ sudo groupadd hadoopGrp //Create a user group
-    $ sudo useradd -s /bin/bash \
-                   -d /home/hadoop \
-                   -m hadoop \
-                   -g hadoopGrp
-    $ sudo passwd hadoop //Setup password
-    ```
-    
-2. 设置权限
-    
-    修改所有机器的`/etc/sudoers`，添加以下内容
-    ```
-    #For Debian
-    hadoop ALL=(ALL:ALL) ALL
-    
-    #For CentOS
-    hadoop ALL=(ALL) ALL
-    ```
-    
-3. 设置防火墙
-
-    在配置前可以关闭所有机器的防火墙，在配置后再开启
-    
-    ```sh
-    #For CentOS
-    $ sudo systemctl stop firewalld.service
-    $ sudo systemctl disable firewalld.service
-    
-    #For Debian
-    $ chkconfig iptables off
-    ```
-    
-    对于CentOS还需要关闭selinux，修改`/etc/selinux/config`中内容如下
-    ```
-    SELINUX=disabled
-    ```
-    
-4. SSH登录
-    
-    1. 在master节点上执行
-    
-        ```sh
-        $ sudo su hadoop
-        $ ssh slave1
-        ```
-        输入密码成功登陆后输入`exit`退出；
-        
-    2. 生成RSA Key
-    
-        ```sh
-        $ mkdir .ssh
-        $ cd ~/.ssh
-        $ ssh-keygen -t rsa
-        $ cat id_rsa.pub >> authorized_keys
-        ```
-        查看`authorized_keys`文件，应有类似内容
-        ```
-        ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDBJXXJthPSknQcn hadoop@master
-        ```
-        
-    3. 为slave机器设置SSH Key登录
-    
-        在master节点上执行
-        ```sh
-        $ ssh hadoop@slave1 'mkdir ~/.ssh'
-        $ scp authorized_keys hadoop@slave1:~/.ssh
-        //For each slave machine
-        ... 
-        ```
-        
-        在复制完后，可以用`ssh slave1`命令来测试是否配置成功。
-        
-        如果无误，应该不会出现`Permission denied (publickey).`这样的错误。
-        
-### 安装环境
-
-#### JDK
-
-在Oracle[网站][JDK]下载JDK并解压至服务器：
-
-```sh
-$ cd /usr/local
-$ wget https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/jdk-8u192-linux-x64
-.tar.gz
-$ tar zxvf jdk-8u192-linux-x64.tar.gz
+```shell
+$ git clone
 ```
-
-#### Hadoop
-
-在[Apache Hadoop Releases Repo](https://archive.apache.org/dist/hadoop/common/)下载Hadoop-2.6.0并解压至服务器：
-
-**Hadoop/HBase/Zookeeper版本有搭配要求，请勿盲目选择最新的发行版，详见[Apache HBase Configuration](https://hbase.apache.org/book.html#basic.prerequisites)**
-```sh
-$ cd /usr/local
-$ wget https://archive.apache.org/dist/hadoop/common/hadoop-2.6.0/hadoop-2.6.0.tar.gz
-$ tar zxvf hadoop-2.6.0.tar.gz
-```
-#### HBase
-
-#### Zookeeper
-
-
-### Plugins
-
-Dillinger 
-
-is currently extended with the following plugins. Instructions on how to use them in your own application are 
-linked below.
-
-| Plugin | README |
-| ------ | ------ |
-| Dropbox | [plugins/dropbox/README.md][PlDb] |
-| Github | [plugins/github/README.md][PlGh] |
-| Google Drive | [plugins/googledrive/README.md][PlGd] |
-| OneDrive | [plugins/onedrive/README.md][PlOd] |
-| Medium | [plugins/medium/README.md][PlMe] |
-| Google Analytics | [plugins/googleanalytics/README.md][PlGa] |
-
 
 ### Development
 
@@ -223,7 +71,7 @@ $ gulp build dist --prod
    
 ## 致谢
 
-该程序使用了以下开源组件（见[pom.xml][pom]），在此表示感谢：
+该程序使用了以下开源组件（见[pom.xml](/pom.xml)），在此表示感谢：
 
 * [hadoop] - The Apache Hadoop software library is a framework that allows for the distributed processing of large data sets across clusters of computers using simple programming models.
 * [hbase] - Apache HBase™ is the Hadoop database, a distributed, scalable, big data store. 
@@ -231,7 +79,7 @@ $ gulp build dist --prod
 * [weasis] - Weasis is a DICOM viewer available as a desktop application or as a web-based application.
 * [dcm4che] - A collection of open source applications and utilities for the healthcare enterprise.
 * [log4j] - Apache Log4j 2 is an upgrade to Log4j that provides significant improvements over its predecessor, Log4j 1.x, and provides many of the improvements available in Logback while fixing some inherent problems in Logback’s architecture.
-* [Gaoyp12138-dicom] - 提供了[DicomParseUtils.java][DicomParseUtils]的大部分内容
+* [Gaoyp12138-dicom] - 提供了[DicomParseUtils.java](/src/main/java/Utils/DicomParseUtil.java)的大部分内容
 * [Dillinger] - A awesome markdown editor.
 
 本项目还得到了西安交通大学[生命科学与技术学院][slst]、[深圳开立生物技术有限公司][sonoscape]相关人员的指导，在此一并表示感谢。
