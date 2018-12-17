@@ -367,21 +367,28 @@ public class AttrUtil {
     }
     /**
      * Upload attributes informations to hbase database
+     * tag:1 DicomFile
+     * tag:0 GSPSFile
      * @param hBaseUtil
+     * @param TABLENAME
+     * @param HDFS_ROOT_DIR
      * @throws IOException
      */
 
-    public void UploadToHBase(HBaseUtil hBaseUtil, String Date, String HDFS_ROOT_DIR) throws IOException {
-        tableName = Date;
-        hBaseUtil.createTable(tableName, columnFamilies);
+    public void UploadToHBase(HBaseUtil hBaseUtil, String TABLENAME, String HDFS_ROOT_DIR, boolean isDcmFile) throws IOException {
+        tableName = TABLENAME;
         String UID = attrs.getString(Tag.StudyInstanceUID, "Unknown");
-        UploadPatientColumn(hBaseUtil, UID);
-        UploadHospitalColumn(hBaseUtil, UID);
-        UploadStudyColumn(hBaseUtil, UID);
-        UploadPhysicianColumn(hBaseUtil, UID);
-        UploadImageColumn(hBaseUtil, UID);
-        UploadAnnotationColumn(hBaseUtil, UID);
-        UploadHBaseColumn(hBaseUtil, UID, HDFS_ROOT_DIR);
+        if (isDcmFile) {
+            hBaseUtil.createTable(tableName, columnFamilies);
+            UploadPatientColumn(hBaseUtil, UID);
+            UploadHospitalColumn(hBaseUtil, UID);
+            UploadStudyColumn(hBaseUtil, UID);
+            UploadPhysicianColumn(hBaseUtil, UID);
+            UploadImageColumn(hBaseUtil, UID);
+            UploadHBaseColumn(hBaseUtil, UID, HDFS_ROOT_DIR);
+        } else {
+            UploadAnnotationColumn(hBaseUtil, UID);
+        }
     }
 
     /**
