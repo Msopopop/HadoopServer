@@ -6,7 +6,7 @@
 
 ## 致谢
 
-该程序使用了以下开源组件（见[pom.xml](/pom.xml)），在此表示感谢：
+该程序使用了以下开源组件（见[pom.xml](https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/pom.xml)），在此表示感谢：
 
 * [hadoop] - The Apache Hadoop software library is a framework that allows for the distributed processing of large data sets across clusters of computers using simple programming models.
 * [hbase] - Apache HBase™ is the Hadoop database, a distributed, scalable, big data store. 
@@ -14,7 +14,7 @@
 * [weasis] - Weasis is a DICOM viewer available as a desktop application or as a web-based application.
 * [dcm4che] - A collection of open source applications and utilities for the healthcare enterprise.
 * [log4j] - Apache Log4j 2 is an upgrade to Log4j that provides significant improvements over its predecessor, Log4j 1.x, and provides many of the improvements available in Logback while fixing some inherent problems in Logback’s architecture.
-* [Gaoyp12138-dicom] - 提供了[DicomParseUtils.java](/src/main/java/Utils/DicomParseUtil.java)的部分代码
+* [Gaoyp12138-dicom] - 提供了[DicomParseUtils.java](https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/src/main/java/Utils/DicomParseUtil.java)的部分代码
 * [Dillinger] - A awesome markdown editor.
 
 本项目还得到了西安交通大学 [生命科学与技术学院][slst]、[深圳开立生物技术有限公司][sonoscape]相关人员的指导，在此一并表示感谢。
