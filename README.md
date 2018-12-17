@@ -38,32 +38,36 @@
 
 #### 网络配置
 
-设集群master的IP为*172.19.120.35*，slave服务器的服务器为*172.19.120.36*,*172.19.120.37*,*172.19.120.38*
+假设集群master的私有IP为`172.19.120.35`，slave服务器群的私有IP为
+```
+172.19.120.36 ~ 172.19.120.135
+```
 
-在所有集群机器的*hosts*内追加以下内容
-```sh
+在所有集群机器的`/etc/hosts`中追加以下内容
+```
 master 172.19.120.35
 slave1 172.19.120.36
 slave2 172.19.120.37
 slave3 172.19.120.38
+...
+slave100 172.19.120.135
 ```
 
-####安装JDK
+#### 安装JDK
 
-在Oracle[网站][JDK]下载JDK并解压至服务器：
+使用`root`用户（一般用户也可），在Oracle[网站][JDK]下载JDK并解压至服务器：
 
 ```sh
 $ cd /usr/local
-$ wget https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/jdk-8u192-linux-x64.tar.gz
+$ wget https://download.oracle.com/otn-pub/java/jdk/8u192-b12/750e1c8617c5452694857ad95c3ee230/jdk-8u192-linux-x64
+.tar.gz
 $ tar zxvf jdk-8u192-linux-x64.tar.gz
 ```
 
 设置*JAVA_HOME*、*CLASSPATH*、*PATH*等环境变量，在
-
-```sh
+`
 /etc/profile
-```
-
+`
 中追加以下内容
 
 ```sh
@@ -147,5 +151,5 @@ EPL-2.0
    [Gaoyp12138-dicom]: <https://github.com/Gaoyp12138/dicom>
    [Dillinger]: <https://dillinger.io>
    [JDK]:<https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>
-   [pom]: <https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/blob/master/pom.xml>
+   [pom]: <https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/blob/master/pom.xml#L124>
    [DicomParseUtils]: <https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/blob/master/src/main/java/Utils/DicomParseUtil.java>
