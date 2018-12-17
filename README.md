@@ -7,9 +7,8 @@
   - 将DICOM文件以及JPEG图片存放到HDFS中
   - 解析DICOM文件将患者信息存入HBase
 
-> The overriding design goal for Markdown's
-> formatting syntax is to make it as readable
-> as possible. The idea is that a
+> Apache Hadoop是一款支持数据密集型分布式应用程序并以Apache 2.0许可协议发布的开源软件框架。
+> 它支持在商品硬件构建的大型集群上运行的应用程序。Hadoop是根据谷歌公司发表的MapReduce和Google文件系统的论文自行实现而成。所有的Hadoop模块都有一个基本假设，即硬件故障是常见情况，应该由框架自动处理。 
 > Markdown-formatted document should be
 > publishable as-is, as plain text, without
 > looking like it's been marked up with tags
