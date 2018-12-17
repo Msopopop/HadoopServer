@@ -12,7 +12,7 @@
 1. 修改主机名
 
     对于centOS用户，执行
-    ``shell
+    ```shell
     $ sudo hostnamectl set-hostname HOST_NAME
     ```
     
