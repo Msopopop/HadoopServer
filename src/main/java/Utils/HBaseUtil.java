@@ -51,7 +51,7 @@ public class HBaseUtil {
      */
     public boolean createTable(String tableName, String[] columnFamilies) throws IOException {
         if (isExist(tableName)) {
-            logger.info("Table: " + tableName + " already exists");
+            logger.error("Table: " + tableName + " already exists");
             return false;
         } else {
             // Add a description for a scores table(NEW API)
@@ -111,7 +111,7 @@ public class HBaseUtil {
                         Bytes.toBytes(value)
                 ));
             } finally {
-                logger.info("Create Row:" + row + "|" + columnFamily + "|" + column + "|" + value + " successfully");
+
             }
             return true;
         } else {

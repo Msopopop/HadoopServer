@@ -48,10 +48,10 @@ public class mainClass {
                             // hdfs://${HDFS_NODE_NAME}:9000/dicomFile/yyyy-mm-dd
                             hdfsUtil.mkdir(HDFS_ROOT_DIR_DICOM + Date);
                             // Upload files to hdfs://master:9000/dicomFile/yyyy-mm-dd
-                            hdfsUtil.uploadFile(DICOM_ROOT_DIR + FileName, HDFS_ROOT_DIR_DICOM + Date);
+                            hdfsUtil.uploadFile(dcmFile, HDFS_ROOT_DIR_DICOM + Date);
 
                             AttrUtil attrUploadUtil = new AttrUtil(dcmFile);
-                            attrUploadUtil.UploadToHBase(HBaseUtil, TABLE_NAME, HDFS_ROOT_DIR_DICOM, true);
+                            attrUploadUtil.UploadToHBase(HBaseUtil, TABLE_NAME, HDFS_ROOT_DIR_DICOM, Date, true);
 
                             // Parse dcm file and put data to HBase
                             DCM2ImageUtil dcm2ImageUtil = new DCM2ImageUtil(dcmFile);
@@ -66,7 +66,6 @@ public class mainClass {
                             if (null != jpgFileNameList && (!jpgFileNameList.isEmpty()))
                                 for (String filePath : jpgFileNameList)
                                     hdfsUtil.uploadFile(filePath, HDFS_ROOT_DIR_DICOM + Date);
-
                         }
                     }
                     watchKey.reset();
@@ -98,10 +97,10 @@ public class mainClass {
                                 File GSPSFile = new File(FullFileName);
                                 hdfsUtil.mkdir(HDFS_ROOT_DIR_GSPS + Date);
                                 // Upload files to hdfs://master:9000/GSPSFile/yyyy-mm-dd
-                                hdfsUtil.uploadFile(GSPS_ROOT_DIR + FileName, HDFS_ROOT_DIR_GSPS + Date);
+                                hdfsUtil.uploadFile(GSPSFile, HDFS_ROOT_DIR_GSPS + Date);
 
                                 AttrUtil attrUploadUtil = new AttrUtil(GSPSFile);
-                                attrUploadUtil.UploadToHBase(HBaseUtil, TABLE_NAME, HDFS_ROOT_DIR_GSPS, false);
+                                attrUploadUtil.UploadToHBase(HBaseUtil, TABLE_NAME, HDFS_ROOT_DIR_GSPS, Date, false);
                             }
                         }
                         watchKey.reset();

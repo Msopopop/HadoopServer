@@ -37,10 +37,10 @@ public class DicomParseUtil {
     /**
      * Put attribute
      *
-     * @param obJ
+     * @param obJ : DicomObject
      */
     @SuppressWarnings("static-access")
-    public void setObject(Attributes obJ) {
+    public static void setObject(Attributes obJ) {
         obj = obJ;
     }
 

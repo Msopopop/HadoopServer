@@ -11,7 +11,7 @@ import java.io.IOException;
 
 public class HDFSUtil {
     private static Logger logger = Logger.getLogger(HDFSUtil.class);
-    //Path: hdfs://master:9000/dicomFile/a.dcm
+    //Path: hdfs://master:9000/dicomFile/yyyy-mm-dd/file.dcm
 
     private static Configuration conf = new Configuration();
     private static FileSystem hdfs = null;
@@ -40,7 +40,7 @@ public class HDFSUtil {
         outputStream.write(contents);
         //Close
         outputStream.close();
-        logger.info("Create success");
+        logger.info("Create contents success");
     }
 
     public void close() throws IOException {
@@ -72,7 +72,7 @@ public class HDFSUtil {
         dst = "hdfs://" + NodeName + ":9000" + dst;
         Path srcPath = new Path(src);
         Path dstPath = new Path(dst);
-        hdfs.copyFromLocalFile(false, true, srcPath, dstPath);
+        hdfs.copyFromLocalFile(true, true, srcPath, dstPath);
         logger.info("File " + src + " upload successfully");
     }
 
@@ -87,9 +87,10 @@ public class HDFSUtil {
         dst = "hdfs://" + NodeName + ":9000" + dst;
         Path srcPath = new Path(file.getAbsolutePath());
         Path dstPath = new Path(dst);
-        hdfs.copyFromLocalFile(false, true, srcPath, dstPath);
+        hdfs.copyFromLocalFile(true, true, srcPath, dstPath);
         logger.info("File " + file.getAbsolutePath() + " upload successfully");
     }
+
     public void renameFile(String oldName, String newName) throws IOException {
         oldName = "hdfs://" + NodeName + ":9000" + oldName;
         newName = "hdfs://" + NodeName + ":9000" + newName;

@@ -1,6 +1,5 @@
 package Utils;
 
-import org.apache.log4j.Logger;
 import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 
@@ -17,7 +16,6 @@ public class AttrUtil {
             "Annotation", //[5]
             "File"  //[6]
     };
-    private static org.apache.log4j.Logger logger = Logger.getLogger(AttrUtil.class);
     private static Attributes attrs = null;
     private static String tableName = null;
     private static String fileName = null;
@@ -260,7 +258,7 @@ public class AttrUtil {
     }
 
     // TODO Multiple Grahpic Annotations
-    private void UploadAnnotationColumn(HBaseUtil hBaseUtil, String UID, String HDFS_ROOT_DIR) throws IOException {
+    private void UploadAnnotationColumn(HBaseUtil hBaseUtil, String UID, String HDFS_ROOT_DIR, String Date) throws IOException {
         hBaseUtil.addRow(tableName,
                 UID,
                 columnFamilies[6],
@@ -275,7 +273,7 @@ public class AttrUtil {
                 UID,
                 columnFamilies[6],
                 "GSPSFileCreateDate",
-                tableName);
+                Date);
         hBaseUtil.addRow(tableName,
                 UID,
                 columnFamilies[5],
@@ -358,7 +356,7 @@ public class AttrUtil {
                 attrs.getString(Tag.GraphicFilled, ""));
     }
 
-    private void UploadHBaseColumn(HBaseUtil hBaseUtil, String UID, String HDFS_ROOT_DIR) throws IOException {
+    private void UploadHBaseColumn(HBaseUtil hBaseUtil, String UID, String HDFS_ROOT_DIR, String Date) throws IOException {
         hBaseUtil.addRow(tableName,
                 UID,
                 columnFamilies[6],
@@ -373,7 +371,7 @@ public class AttrUtil {
                 UID,
                 columnFamilies[6],
                 "DicomFileCreateDate",
-                tableName);
+                Date);
     }
     /**
      * Upload attributes informations to hbase database
@@ -381,11 +379,12 @@ public class AttrUtil {
      * tag:0 GSPSFile
      * @param hBaseUtil
      * @param TABLENAME
-     * @param HDFS_ROOT_DIR
+     * @param HDFS_ROOT_DIR : Root DIR of HDFS Path. For example: "/dicomFile/2018-12-20"
+     * @param Date : a String when dicom file creates
      * @throws IOException
      */
 
-    public void UploadToHBase(HBaseUtil hBaseUtil, String TABLENAME, String HDFS_ROOT_DIR, boolean isDcmFile) throws IOException {
+    public void UploadToHBase(HBaseUtil hBaseUtil, String TABLENAME, String HDFS_ROOT_DIR, String Date, boolean isDcmFile) throws IOException {
         tableName = TABLENAME;
         String UID = attrs.getString(Tag.StudyInstanceUID, "Unknown");
         if (isDcmFile) {
@@ -395,9 +394,9 @@ public class AttrUtil {
             UploadStudyColumn(hBaseUtil, UID);
             UploadPhysicianColumn(hBaseUtil, UID);
             UploadImageColumn(hBaseUtil, UID);
-            UploadHBaseColumn(hBaseUtil, UID, HDFS_ROOT_DIR);
+            UploadHBaseColumn(hBaseUtil, UID, HDFS_ROOT_DIR, Date);
         } else {
-            UploadAnnotationColumn(hBaseUtil, UID, HDFS_ROOT_DIR);
+            UploadAnnotationColumn(hBaseUtil, UID, HDFS_ROOT_DIR, Date);
         }
     }
 
