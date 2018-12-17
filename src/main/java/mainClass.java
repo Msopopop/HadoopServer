@@ -11,7 +11,7 @@ import java.util.List;
 
 public class mainClass {
     private static Logger logger = Logger.getLogger(mainClass.class);
-    private static String GSPS_ROOT_DIR = "/home/hadoop/GSPSFile/";
+    private static String GSPS_ROOT_DIR = "/home/verizonwu/GSPSFile/";
     private static String DICOM_ROOT_DIR = "/home/hadoop/dicomFile/";
     private static String HDFS_ROOT_DIR_DICOM = "/dicomFile/";
     private static String HDFS_ROOT_DIR_GSPS = "/GSPSFile/";
@@ -59,7 +59,7 @@ public class mainClass {
                             dcm2ImageUtil.setAutoWindowing(true);
                             // Convert and get all Image file names
                             List<String> jpgFileNameList = dcm2ImageUtil.parseImage(DICOM_ROOT_DIR,
-                                    "JPEG", ".jpg", null, null, 1l);
+                                    "JPEG", ".jpg", null, null, 1);
                             // Upload jpg file names to HBase
                             dcm2ImageUtil.UploadToHBase(HBaseUtil, TABLE_NAME, HDFS_ROOT_DIR_DICOM);
                             // Upload Image File to HDFS
