@@ -141,6 +141,12 @@
             <version>5.3.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.dom4j/dom4j -->
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>2.1.1</version>
+        </dependency>
         <dependency>
             <groupId>org.weasis.core</groupId>
             <artifactId>weasis-core-util</artifactId>

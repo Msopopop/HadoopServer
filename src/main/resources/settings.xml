@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+    GSPS_ROOT_DIR = "/home/verizonwu/GSPSFile/";
+    DICOM_ROOT_DIR = "/home/hadoop/dicomFile/";
+
+    HDFS_ROOT_DIR_DICOM = "/dicomFile/";
+    HDFS_ROOT_DIR_GSPS = "/GSPSFile/";
+
+    TABLE_NAME = "DicomAttr";
+
+    HDFS_NODE_NAME = "master";
+    HBASE_ZOOKEEPER_QUORUM = "slave";
+-->
+<Settings>
+    <TableName>
+        <value>DicomAttr</value>
+    </TableName>
+    <Hadoop>
+        <NameNode>
+            <value>master</value>
+        </NameNode>
+        <ZooKeeperQuorum>
+            <value>slave</value>
+        </ZooKeeperQuorum>
+    </Hadoop>
+    <Dir>
+        <DICOM id="HDFS">
+            <value>/dicomFile/</value>
+        </DICOM>
+        <DICOM id="local">
+            <value>/home/hadoop/dicomFile</value>
+        </DICOM>
+        <GSPS id="HDFS">
+            <value>/GSPSFile/</value>
+        </GSPS>
+        <GSPS id="local">
+            <value>/home/verizonwu/GSPSFile</value>
+        </GSPS>
+    </Dir>
+</Settings>
