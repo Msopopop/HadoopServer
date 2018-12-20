@@ -153,11 +153,6 @@
             <version>${weasis.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.weasis.opencv</groupId>
-            <artifactId>weasis-opencv-core</artifactId>
-            <version>${weasis.version}</version>
-        </dependency>
-        <dependency>
             <groupId>org.dcm4che</groupId>
             <artifactId>dcm4che-core</artifactId>
             <version>${dcm4che.version}</version>
@@ -169,29 +164,12 @@
         </dependency>
         <dependency>
             <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-net</artifactId>
-            <version>${dcm4che.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
             <artifactId>dcm4che-json</artifactId>
             <version>${dcm4che.version}</version>
         </dependency>
-        <!-- dcm4che-imageio packages are linked to native libraries not located in this package (see dcm4che-imageio-opencv).
-			Only required by storeSCU, Dicomizer and ForwardUtil (DicomGateway) for uncompressing data not supported by the destination. -->
         <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-imageio</artifactId>
-            <version>${dcm4che.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-image</artifactId>
-            <version>${dcm4che.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-imageio-opencv</artifactId>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-json2dcm</artifactId>
             <version>${dcm4che.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/dcm4che/dcm4che-iod -->
