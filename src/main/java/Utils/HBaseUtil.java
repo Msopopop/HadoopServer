@@ -1,14 +1,15 @@
 package Utils;
 
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.hbase.*;
+import org.apache.hadoop.hbase.HBaseConfiguration;
+import org.apache.hadoop.hbase.HColumnDescriptor;
+import org.apache.hadoop.hbase.HTableDescriptor;
+import org.apache.hadoop.hbase.TableName;
 import org.apache.hadoop.hbase.client.*;
 import org.apache.hadoop.hbase.util.Bytes;
 import org.apache.log4j.Logger;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class HBaseUtil {
     private static Logger logger = Logger.getLogger(HBaseUtil.class);
@@ -102,17 +103,14 @@ public class HBaseUtil {
         // Set-up connection first(NEW API)
         if (isExist(tableName)) {
             table = connection.getTable(TableName.valueOf(tableName));
-            try {
-                // Add data(NEW API)
-                Put put = new Put(Bytes.toBytes(row));
-                table.put(put.addColumn(
+            // Add data(NEW API)
+            Put put = new Put(Bytes.toBytes(row));
+            table.put(put.addColumn(
                         Bytes.toBytes(columnFamily),
                         Bytes.toBytes(column),
                         Bytes.toBytes(value)
-                ));
-            } finally {
-
-            }
+            ));
+            logger.info("Row " + row.substring(0, 10) + " added value " + columnFamily + ":" + column + " = " + value);
             return true;
         } else {
             logger.error("Table not exists. Add row data failed");
@@ -120,91 +118,28 @@ public class HBaseUtil {
         }
     }
 
-    /**
-     * Delete single row data
-     *
-     * @param tableName
-     * @param row
-     * @return
-     * @throws IOException
-     */
-    public boolean deleteRow(String tableName, String row) throws IOException {
-        // Set-up connection first(NEW API)
+    public String getRow(String tableName, String row,
+                         String columnFamily,
+                         String column) throws IOException {
         if (isExist(tableName)) {
             table = connection.getTable(TableName.valueOf(tableName));
-            // Delete data(NEW API)
-            table.delete(new Delete(Bytes.toBytes(row)));
-            return true;
-        } else {
-            logger.error("Table not exists. Delete row data failed");
-            return false;
-        }
-    }
+            //Get data
+            Get get = new Get(Bytes.toBytes(row));
+            Result result = table.get(get);
+            if (result.containsColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column))) {
+                byte[] val = result.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(column));
+                return Bytes.toString(val);
 
-    /**
-     * Delete multiple rows data
-     *
-     * @param tableName
-     * @param rows
-     * @return boolean
-     * @throws IOException
-     */
-    public boolean deleteRows(String tableName, String[] rows) throws IOException {
-        // Set-up connection first(NEW API)
-        if (isExist(tableName)) {
-            table = connection.getTable(TableName.valueOf(tableName));
-                List<Delete> deleteList = new ArrayList<Delete>();
-                for (String row : rows) {
-                    Delete delete = new Delete(Bytes.toBytes(row));
-                    deleteList.add(delete);
-                }
-                // Delete data(NEW API)
-                table.delete(deleteList);
-            return true;
+            } else {
+                logger.error("Not found ColumnFamily or Column: "
+                        + columnFamily + ":" + column);
+                return null;
+            }
         } else {
-            logger.error("Table not exists. Delete row data failed");
-            return false;
-        }
-    }
-
-    /**
-     * Get all records
-     * @param tableName
-     * @return
-     * @throws IOException
-     */
-    public List<String> getAllRows(String tableName) throws IOException {
-        // Set-up connection first(NEW API)
-        if (isExist(tableName)) {
-            List<String> listString = new ArrayList<>();
-            table = connection.getTable(TableName.valueOf(tableName));
-                Scan scan = new Scan();
-                ResultScanner results = table.getScanner(scan);
-                for (Result result : results) {
-                    // Each row
-                    for (Cell rowKV : result.rawCells()) {
-                        // Row name
-                        String rowName = CellUtil.cloneRow(rowKV).toString();
-                        listString.add(rowName);
-                        // Column family
-                        String familyName = String.valueOf(CellUtil.cloneFamily(rowKV));
-                        listString.add(familyName);
-                        // Column name
-                        listString.add(CellUtil.cloneQualifier(rowKV).toString());
-                        // Value
-                        listString.add(CellUtil.cloneValue(rowKV).toString());
-                        // Time stamp
-                        listString.add(String.valueOf(rowKV.getTimestamp()));
-                    }
-                }
-                results.close();
-            return listString;
-        } else {
-            logger.error("Table not exists. Get all data failed");
+            logger.error("Table Not found: " + tableName);
             return null;
         }
     }
-
     /**
      * Close Hbase client
      *

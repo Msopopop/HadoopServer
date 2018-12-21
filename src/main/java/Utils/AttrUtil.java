@@ -4,7 +4,11 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class AttrUtil {
     public static final String[] columnFamilies = {
@@ -257,137 +261,227 @@ public class AttrUtil {
                 attrs.getString(Tag.PixelPaddingValue, ""));
     }
 
-    // TODO Multiple Grahpic Annotations
+    // TODO Append Grahpic Annotations Tags
     private void UploadAnnotationColumn(HBaseUtil hBaseUtil, String UID, String HDFS_ROOT_DIR, String Date) throws IOException {
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[6],
-                "GSPSFilePath",
-                HDFS_ROOT_DIR + tableName + "/" + fileName);
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[6],
-                "GSPSFileName",
-                fileName);
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[6],
-                "GSPSFileCreateDate",
-                Date);
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "GraphicAnnotationSequence",
-                attrs.getString(Tag.GraphicAnnotationSequence, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "Item",
-                attrs.getString(Tag.Item, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "ReferencedSOPClassUID",
-                attrs.getString(Tag.ReferencedSOPClassUID, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "ReferencedSOPInstanceUID",
-                attrs.getString(Tag.ReferencedSOPInstanceUID, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "ReferencedFrameNumber",
-                attrs.getString(Tag.ReferencedFrameNumber, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "TextObjectSequence",
-                attrs.getString(Tag.TextObjectSequence, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "BoundingBoxAnnotationUnits",
-                attrs.getString(Tag.BoundingBoxAnnotationUnits, "PIXEL"));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "UnformattedTextValue",
-                attrs.getString(Tag.UnformattedTextValue, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "BoundingBoxTopLeftHandCorner",
-                attrs.getString(Tag.BoundingBoxTopLeftHandCorner, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "BoundingBoxBottomRightHandCorner",
-                attrs.getString(Tag.BoundingBoxBottomRightHandCorner, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "BoundingBoxTextHorizontalJustification",
-                attrs.getString(Tag.BoundingBoxTextHorizontalJustification, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "GraphicAnnotationUnits",
-                attrs.getString(Tag.GraphicAnnotationUnits, "PIXEL"));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "GraphicDimensions",
-                attrs.getString(Tag.GraphicDimensions, "2"));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "NumberOfGraphicPoints",
-                attrs.getString(Tag.NumberOfGraphicPoints, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "GraphicType",
-                attrs.getString(Tag.GraphicType, ""));
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[5],
-                "GraphicFilled",
-                attrs.getString(Tag.GraphicFilled, ""));
+        if (hBaseUtil.getRow(tableName, UID, columnFamilies[5], "Version") != null) {
+            String GSPSFilePath = hBaseUtil.getRow(
+                    tableName, UID, columnFamilies[5], "GSPSFilePath");
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GSPSFilePath",
+                    GSPSFilePath + "," +
+                            HDFS_ROOT_DIR + Date + "/" + fileName);
+
+            String GSPSFileName = hBaseUtil.getRow(
+                    tableName, UID, columnFamilies[5], "GSPSFileName");
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GSPSFileName",
+                    GSPSFileName + "," + fileName);
+            int Version = Integer.valueOf(
+                    hBaseUtil.getRow(
+                            tableName, UID, columnFamilies[5], "Version"));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "Version",
+                    String.valueOf(Version + 1));
+        } else {
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GSPSFilePath",
+                    HDFS_ROOT_DIR + Date + "/" + fileName);
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GSPSFileName",
+                    fileName);
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "Version",
+                    "1");
+            /*
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GraphicAnnotationSequence",
+                    attrs.getString(Tag.GraphicAnnotationSequence, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "Item",
+                    attrs.getString(Tag.Item, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "ReferencedSOPClassUID",
+                    attrs.getString(Tag.ReferencedSOPClassUID, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "ReferencedSOPInstanceUID",
+                    attrs.getString(Tag.ReferencedSOPInstanceUID, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "ReferencedFrameNumber",
+                    attrs.getString(Tag.ReferencedFrameNumber, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "TextObjectSequence",
+                    attrs.getString(Tag.TextObjectSequence, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "BoundingBoxAnnotationUnits",
+                    attrs.getString(Tag.BoundingBoxAnnotationUnits, "PIXEL"));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "UnformattedTextValue",
+                    attrs.getString(Tag.UnformattedTextValue, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "BoundingBoxTopLeftHandCorner",
+                    attrs.getString(Tag.BoundingBoxTopLeftHandCorner, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "BoundingBoxBottomRightHandCorner",
+                    attrs.getString(Tag.BoundingBoxBottomRightHandCorner, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "BoundingBoxTextHorizontalJustification",
+                    attrs.getString(Tag.BoundingBoxTextHorizontalJustification, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GraphicAnnotationUnits",
+                    attrs.getString(Tag.GraphicAnnotationUnits, "PIXEL"));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GraphicDimensions",
+                    attrs.getString(Tag.GraphicDimensions, "2"));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "NumberOfGraphicPoints",
+                    attrs.getString(Tag.NumberOfGraphicPoints, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GraphicType",
+                    attrs.getString(Tag.GraphicType, ""));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[5],
+                    "GraphicFilled",
+                    attrs.getString(Tag.GraphicFilled, ""));
+                    */
+        }
     }
 
     private void UploadHBaseColumn(HBaseUtil hBaseUtil, String UID, String HDFS_ROOT_DIR, String Date) throws IOException {
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[6],
-                "DicomFilePath",
-                HDFS_ROOT_DIR + tableName + "/" + fileName);
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[6],
-                "DicomFileName",
-                fileName);
-        hBaseUtil.addRow(tableName,
-                UID,
-                columnFamilies[6],
-                "DicomFileCreateDate",
-                Date);
+        if (hBaseUtil.getRow(tableName, UID, columnFamilies[6], "Version") != null) {
+            String DicomFilePath = hBaseUtil.getRow(
+                    tableName, UID, columnFamilies[6], "DicomFilePath");
+            if (DicomFilePath.contains(HDFS_ROOT_DIR + Date + "/" + fileName)) return;
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[6],
+                    "DicomFilePath",
+                    DicomFilePath + "," +
+                            HDFS_ROOT_DIR + Date + "/" + fileName);
+
+            String DicomFileName = hBaseUtil.getRow(
+                    tableName, UID, columnFamilies[6], "DicomFileName");
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[6],
+                    "DicomFileName",
+                    DicomFileName + "," + fileName);
+
+            int Version = Integer.valueOf(
+                    hBaseUtil.getRow(
+                            tableName, UID, columnFamilies[6], "Version"));
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[6],
+                    "Version",
+                    String.valueOf(Version + 1));
+        } else {
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[6],
+                    "DicomFilePath",
+                    HDFS_ROOT_DIR + Date + "/" + fileName);
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[6],
+                    "DicomFileName",
+                    fileName);
+            hBaseUtil.addRow(tableName,
+                    UID,
+                    columnFamilies[6],
+                    "Version",
+                    "1");
+        }
     }
+
+    /**
+     * get the String value based on SHA1
+     *
+     * @param fileName
+     * @return
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
+    private String CheckSHA1(String fileName) throws IOException, NoSuchAlgorithmException {
+        InputStream fis = new FileInputStream(fileName);
+
+        byte[] buffer = new byte[1024];
+        MessageDigest complete = MessageDigest.getInstance("SHA-1");
+        int numRead;
+        do {
+            numRead = fis.read(buffer);
+            if (numRead > 0) {
+                complete.update(buffer, 0, numRead);//用读到的字节进行MD5的计算，第二个参数是偏移量
+            }
+        } while (numRead != -1);
+
+        fis.close();
+        byte[] b = complete.digest();
+        String result = "";
+        for (int i = 0; i < b.length; i++) {
+            //加0x100是因为有的b[i]的十六进制只有1位
+            result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+        }
+        return result;
+    }
+
     /**
      * Upload attributes informations to hbase database
      * tag:1 DicomFile
      * tag:0 GSPSFile
-     * @param hBaseUtil
-     * @param TABLENAME
+     * @param hBaseUtil :
+     * @param TABLENAME :
      * @param HDFS_ROOT_DIR : Root DIR of HDFS Path. For example: "/dicomFile/2018-12-20"
      * @param Date : a String when dicom file creates
      * @throws IOException
      */
 
-    public void UploadToHBase(HBaseUtil hBaseUtil, String TABLENAME, String HDFS_ROOT_DIR, String Date, boolean isDcmFile) throws IOException {
+    public void UploadToHBase(HBaseUtil hBaseUtil, String TABLENAME, String HDFS_ROOT_DIR, String Date, boolean isDcmImgFile) throws IOException {
         tableName = TABLENAME;
         String UID = attrs.getString(Tag.StudyInstanceUID, "Unknown");
-        if (isDcmFile) {
+        if (isDcmImgFile) {
             hBaseUtil.createTable(tableName, columnFamilies);
             UploadPatientColumn(hBaseUtil, UID);
             UploadHospitalColumn(hBaseUtil, UID);

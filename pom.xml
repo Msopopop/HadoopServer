@@ -103,6 +103,7 @@
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>mainClass</Main-Class>
+                                        <!--
                                         <Specification-Title>Java Advanced Imaging Image I/O Tools</Specification-Title>
                                         <Specification-Version>1.1</Specification-Version>
                                         <Specification-Vendor>Sun Microsystems, Inc.</Specification-Vendor>
@@ -110,6 +111,7 @@
                                         <Implementation-Version>1.1</Implementation-Version>
                                         <Implementation-Vendor>Sun Microsystems, Inc.</Implementation-Vendor>
                                         <Extension-Name>com.sun.media.imageio</Extension-Name>
+                                        -->
                                     </manifestEntries>
                                 </transformer>
                                 <transformer
@@ -131,6 +133,27 @@
                     <check/>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!-- ${project.build.directory}就是我们通常看到的target目录 -->
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <excludeTransitive>false</excludeTransitive>
+                            <stripVersion>true</stripVersion>
+                            <!-- 不复制scope=provided的依赖包 -->
+                            <excludeScope>provided</excludeScope>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -141,14 +164,15 @@
             <version>5.3.2</version>
             <scope>test</scope>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.dom4j/dom4j -->
+        <dependency>
+            <groupId>org.dom4j</groupId>
+            <artifactId>dom4j</artifactId>
+            <version>2.1.1</version>
+        </dependency>
         <dependency>
             <groupId>org.weasis.core</groupId>
             <artifactId>weasis-core-util</artifactId>
-            <version>${weasis.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.weasis.opencv</groupId>
-            <artifactId>weasis-opencv-core</artifactId>
             <version>${weasis.version}</version>
         </dependency>
         <dependency>
@@ -163,29 +187,12 @@
         </dependency>
         <dependency>
             <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-net</artifactId>
-            <version>${dcm4che.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
             <artifactId>dcm4che-json</artifactId>
             <version>${dcm4che.version}</version>
         </dependency>
-        <!-- dcm4che-imageio packages are linked to native libraries not located in this package (see dcm4che-imageio-opencv).
-			Only required by storeSCU, Dicomizer and ForwardUtil (DicomGateway) for uncompressing data not supported by the destination. -->
         <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-imageio</artifactId>
-            <version>${dcm4che.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-image</artifactId>
-            <version>${dcm4che.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.dcm4che</groupId>
-            <artifactId>dcm4che-imageio-opencv</artifactId>
+            <groupId>org.dcm4che.tool</groupId>
+            <artifactId>dcm4che-tool-json2dcm</artifactId>
             <version>${dcm4che.version}</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/dcm4che/dcm4che-iod -->
