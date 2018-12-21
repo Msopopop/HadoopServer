@@ -117,6 +117,28 @@ public class HBaseUtil {
         }
     }
 
+    public String getRow(String tableName, String row,
+                         String columnFamily,
+                         String column) throws IOException {
+        if (isExist(tableName)) {
+            table = connection.getTable(TableName.valueOf(tableName));
+            //Get data
+            Get get = new Get(Bytes.toBytes(row));
+            Result result = table.get(get);
+            if (result.containsColumn(Bytes.toBytes(columnFamily), Bytes.toBytes(column))) {
+                byte[] val = result.getValue(Bytes.toBytes(columnFamily), Bytes.toBytes(column));
+                return Bytes.toString(val);
+
+            } else {
+                logger.error("Not found ColumnFamily or Column: "
+                        + columnFamily + ":" + column);
+                return null;
+            }
+        } else {
+            logger.error("Table Not found: " + tableName);
+            return null;
+        }
+    }
     /**
      * Close Hbase client
      *

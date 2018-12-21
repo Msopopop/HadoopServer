@@ -1,16 +1,4 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<!--
-    GSPS_ROOT_DIR = "/home/verizonwu/GSPSFile/";
-    DICOM_ROOT_DIR = "/home/hadoop/dicomFile/";
-
-    HDFS_ROOT_DIR_DICOM = "/dicomFile/";
-    HDFS_ROOT_DIR_GSPS = "/GSPSFile/";
-
-    TABLE_NAME = "DicomAttr";
-
-    HDFS_NODE_NAME = "master";
-    HBASE_ZOOKEEPER_QUORUM = "slave";
--->
 <Settings>
     <TableName>
         <value>DicomAttr</value>
