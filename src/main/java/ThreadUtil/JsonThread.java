@@ -1,8 +1,6 @@
 package ThreadUtil;
 
 import Utils.AttrUtil;
-import Utils.HBaseUtil;
-import Utils.HDFSUtil;
 import org.apache.log4j.Logger;
 import org.dcm4che3.io.DicomInputStream;
 import org.dcm4che3.tool.json2dcm.Json2Dcm;
@@ -13,18 +11,12 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
 
-public class JsonThread implements Runnable {
+public class JsonThread extends BaseThread implements Runnable {
 
-    public static String HDFS_NODE_NAME;
-    public static String HBASE_ZOOKEEPER_QUORUM;
-    public static String TABLE_NAME;
-    public static String HDFS_ROOT_DIR;
+    private static String HDFS_ROOT_DIR;
     private static Logger logger = Logger.getLogger(JsonThread.class);
     private static String FILE_ROOT_DIR;
     private static WatchService FileWatchService;
-    private static HDFSUtil hdfsUtil;
-    private static HBaseUtil HBaseUtil;
-
 
     public JsonThread() {
         try {
@@ -48,6 +40,10 @@ public class JsonThread implements Runnable {
         } catch (IOException | InterruptedException e) {
             logger.error(e);
         }
+    }
+
+    public void setHdfsRootDir(String hdfsRootDir) {
+        HDFS_ROOT_DIR = hdfsRootDir;
     }
 
     @SuppressWarnings("static-access")
@@ -80,15 +76,16 @@ public class JsonThread implements Runnable {
 
     private File json2DCM(String jsonFileName) throws IOException {
         File jsonFile = new File(jsonFileName);
+        //JSON2DCM
         Json2Dcm json2Dcm = new Json2Dcm();
         json2Dcm.parse(new DicomInputStream(jsonFile));
 
-        FileOutputStream out = new FileOutputStream("/tmp/HadoopServer/GSPS.dcm");
+        FileOutputStream out = new FileOutputStream("/tmp/GSPS.dcm");
         try {
             json2Dcm.writeTo(out);
         } finally {
             out.close();
-            return new File("/tmp/HadoopServer/GSPS.dcm");
+            return new File("/tmp/GSPS.dcm");
         }
     }
     public void close() {

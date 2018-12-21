@@ -1,8 +1,6 @@
 package ThreadUtil;
 
 import Utils.AttrUtil;
-import Utils.HBaseUtil;
-import Utils.HDFSUtil;
 import org.apache.log4j.Logger;
 
 import java.io.File;
@@ -10,18 +8,17 @@ import java.io.IOException;
 import java.nio.file.*;
 import java.time.LocalDate;
 
-public class DicomThread implements Runnable {
+public class DicomThread extends BaseThread implements Runnable {
 
-    public static String HDFS_NODE_NAME;
-    public static String HBASE_ZOOKEEPER_QUORUM;
-    public static String TABLE_NAME;
     private static Logger logger = Logger.getLogger(DicomThread.class);
     private static String FILE_ROOT_DIR;
-    public static String HDFS_ROOT_DIR;
-    private static WatchService FileWatchService;
-    private static HDFSUtil hdfsUtil;
-    private static HBaseUtil HBaseUtil;
 
+    private static String HDFS_ROOT_DIR;
+
+    public void setHdfsRootDir(String hdfsRootDir) {
+        HDFS_ROOT_DIR = hdfsRootDir;
+    }
+    private static WatchService FileWatchService;
 
     public DicomThread() {
         try {
@@ -49,8 +46,6 @@ public class DicomThread implements Runnable {
 
     @SuppressWarnings("static-access")
     private void runDicom() throws IOException, InterruptedException {
-        hdfsUtil = new HDFSUtil(HDFS_NODE_NAME);
-        HBaseUtil = new HBaseUtil(HBASE_ZOOKEEPER_QUORUM);
         while (true) {
             WatchKey watchKey = FileWatchService.take();
             for (WatchEvent<?> event : watchKey.pollEvents()) {
