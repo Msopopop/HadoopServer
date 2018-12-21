@@ -2,29 +2,13 @@ import ThreadUtil.DicomThread;
 import ThreadUtil.JsonThread;
 import Utils.XMLUtil;
 import org.apache.log4j.Logger;
-
-import java.io.BufferedInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Properties;
+import org.apache.log4j.PropertyConfigurator;
 
 public class mainClass {
     private static Logger logger = Logger.getLogger(mainClass.class);
-    private static Properties properties;
-
-    static {
-        try {
-            properties = new Properties();
-            String loggerConf = System.getProperty("user.dir") + "/conf/log4j.properties";
-            InputStream in = new BufferedInputStream(new FileInputStream(loggerConf));
-            properties.load(in);
-        } catch (IOException e) {
-            logger.error("Unable to log: configuration file missing");
-        }
-    }
 
     public static void main(String[] args) throws Exception {
+        PropertyConfigurator.configure(System.getProperty("user.dir") + "/conf/log4j.properties");
         String confPath = System.getProperty("user.dir") + "/conf/settings.xml";
 
         XMLUtil xmlUtil = new XMLUtil(confPath);

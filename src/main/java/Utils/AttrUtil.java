@@ -4,7 +4,11 @@ import org.dcm4che3.data.Attributes;
 import org.dcm4che3.data.Tag;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class AttrUtil {
     public static final String[] columnFamilies = {
@@ -389,6 +393,7 @@ public class AttrUtil {
         if (hBaseUtil.getRow(tableName, UID, columnFamilies[6], "Version") != null) {
             String DicomFilePath = hBaseUtil.getRow(
                     tableName, UID, columnFamilies[6], "DicomFilePath");
+            if (DicomFilePath.contains(HDFS_ROOT_DIR + Date + "/" + fileName)) return;
             hBaseUtil.addRow(tableName,
                     UID,
                     columnFamilies[6],
@@ -430,6 +435,38 @@ public class AttrUtil {
                     "1");
         }
     }
+
+    /**
+     * get the String value based on SHA1
+     *
+     * @param fileName
+     * @return
+     * @throws IOException
+     * @throws NoSuchAlgorithmException
+     */
+    private String CheckSHA1(String fileName) throws IOException, NoSuchAlgorithmException {
+        InputStream fis = new FileInputStream(fileName);
+
+        byte[] buffer = new byte[1024];
+        MessageDigest complete = MessageDigest.getInstance("SHA-1");
+        int numRead;
+        do {
+            numRead = fis.read(buffer);
+            if (numRead > 0) {
+                complete.update(buffer, 0, numRead);//用读到的字节进行MD5的计算，第二个参数是偏移量
+            }
+        } while (numRead != -1);
+
+        fis.close();
+        byte[] b = complete.digest();
+        String result = "";
+        for (int i = 0; i < b.length; i++) {
+            //加0x100是因为有的b[i]的十六进制只有1位
+            result += Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1);
+        }
+        return result;
+    }
+
     /**
      * Upload attributes informations to hbase database
      * tag:1 DicomFile

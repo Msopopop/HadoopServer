@@ -62,21 +62,6 @@ public class HDFSUtil {
     }
 
     /**
-     * Upload files to HDFS from local path
-     *
-     * @param src
-     * @param dst
-     * @throws IOException
-     */
-    public void uploadFile(String src, String dst) throws IOException {
-        dst = "hdfs://" + NodeName + ":9000" + dst;
-        Path srcPath = new Path(src);
-        Path dstPath = new Path(dst);
-        hdfs.copyFromLocalFile(true, true, srcPath, dstPath);
-        logger.info("File " + src + " upload successfully");
-    }
-
-    /**
      * Upload files to HDFS from existed file
      *
      * @param file
@@ -87,18 +72,9 @@ public class HDFSUtil {
         dst = "hdfs://" + NodeName + ":9000" + dst;
         Path srcPath = new Path(file.getAbsolutePath());
         Path dstPath = new Path(dst);
-        hdfs.copyFromLocalFile(true, true, srcPath, dstPath);
+        hdfs.copyFromLocalFile(false, true, srcPath, dstPath);
+        new File(file.getAbsolutePath() + ".fin").delete();
         logger.info("File " + file.getAbsolutePath() + " upload successfully");
     }
 
-    public void renameFile(String oldName, String newName) throws IOException {
-        oldName = "hdfs://" + NodeName + ":9000" + oldName;
-        newName = "hdfs://" + NodeName + ":9000" + newName;
-        Path oldPath = new Path(oldName);
-        Path newPath = new Path(newName);
-        if (hdfs.rename(oldPath, newPath))
-            logger.info("Rename successful");
-        else
-            logger.error("Rename failed");
-    }
 }

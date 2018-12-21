@@ -110,6 +110,7 @@ public class HBaseUtil {
                         Bytes.toBytes(column),
                         Bytes.toBytes(value)
             ));
+            logger.info("Row " + row.substring(0, 10) + " added value " + columnFamily + ":" + column + " = " + value);
             return true;
         } else {
             logger.error("Table not exists. Add row data failed");

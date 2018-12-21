@@ -56,13 +56,13 @@ public class XMLUtil {
     }
 
     private static void setDicomDir(Element node) {
-        HDFS_ROOT_DIR_DICOM = node.element("HDFS").elementText("value");
-        DICOM_ROOT_DIR = node.element("local").elementText("value");
+        HDFS_ROOT_DIR_DICOM = node.element("HDFS").elementText("value") + "/";
+        DICOM_ROOT_DIR = node.element("local").elementText("value") + "/";
     }
 
     private static void setGSPSDir(Element node) {
-        HDFS_ROOT_DIR_GSPS = node.element("HDFS").elementText("value");
-        JSON_ROOT_DIR = node.element("local").elementText("value");
+        HDFS_ROOT_DIR_GSPS = node.element("HDFS").elementText("value") + "/";
+        JSON_ROOT_DIR = node.element("local").elementText("value") + "/";
     }
 
     public void setParameters() throws IOException {
