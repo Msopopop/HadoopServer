@@ -1,6 +1,9 @@
 # 基于Hadoop的DICOM信息解析系统
 
-[![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0) [![Build Status](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer.svg?branch=master)](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer) [![codebeat badge](https://codebeat.co/badges/aa4e4c3f-fed4-4769-8544-936058cdb1cc)](https://codebeat.co/projects/github-com-sonoscape-hadoopproject-xjtu-hadoopserver-read-external-xml) [![codecov](https://codecov.io/gh/sonoscape-HadoopProject-xjtu/HadoopServer/branch/master/graph/badge.svg)](https://codecov.io/gh/sonoscape-HadoopProject-xjtu/HadoopServer)
+[![License](https://img.shields.io/badge/License-EPL%202.0-blue.svg)](https://opensource.org/licenses/EPL-2.0)
+[![Build Status](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer.svg?branch=master)](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer)
+[![codebeat badge](https://codebeat.co/badges/74dffbf8-42a7-4029-b69f-bc1697e70b5f)](https://codebeat.co/projects/github-com-sonoscape-hadoopproject-xjtu-hadoopserver-master)
+[![codecov](https://codecov.io/gh/sonoscape-HadoopProject-xjtu/HadoopServer/branch/master/graph/badge.svg)](https://codecov.io/gh/sonoscape-HadoopProject-xjtu/HadoopServer)
 
 欢迎来到本项目！请移步[Wiki](https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/wiki/%E6%AC%A2%E8%BF%8E)以了解更多资讯。
 
