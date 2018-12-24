@@ -55,9 +55,9 @@
                                     <version>${enforcer.maven-version}</version>
                                 </requireMavenVersion>
                                 <!-- Bug in maven-enforcer for jdk 9 -->
-                                <!-- <requireJavaVersion> -->
-                                <!-- <version>${enforcer.jdk-version}</version> -->
-                                <!-- </requireJavaVersion> -->
+                                <requireJavaVersion>
+                                    <version>${enforcer.jdk-version}</version>
+                                </requireJavaVersion>
                             </rules>
                         </configuration>
                     </execution>
@@ -133,27 +133,6 @@
                     <check/>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <!-- ${project.build.directory}就是我们通常看到的target目录 -->
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                            <excludeTransitive>false</excludeTransitive>
-                            <stripVersion>true</stripVersion>
-                            <!-- 不复制scope=provided的依赖包 -->
-                            <excludeScope>provided</excludeScope>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
     <dependencies>
@@ -201,13 +180,6 @@
             <artifactId>dcm4che-iod</artifactId>
             <version>2.0.29.v20180102_1551</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.dcm4che.tool/dcm4che-tool-dcm2jpg -->
-        <dependency>
-            <groupId>org.dcm4che.tool</groupId>
-            <artifactId>dcm4che-tool-dcm2jpg</artifactId>
-            <version>5.15.0</version>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/org.apache.hadoop/hadoop-hdfs -->
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -232,26 +204,6 @@
             <groupId>org.apache.hbase</groupId>
             <artifactId>hbase-client</artifactId>
             <version>${hbase.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.stephenc.java-iso-tools</groupId>
-            <artifactId>iso9660-writer</artifactId>
-            <version>2.0.1</version>
-        </dependency>
-        <dependency>
-            <groupId>com.github.stephenc.java-iso-tools</groupId>
-            <artifactId>sabre</artifactId>
-            <version>2.0.1</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>commons-lang</groupId>
-                    <artifactId>commons-lang</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.apache.ant</groupId>
-                    <artifactId>ant</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.slf4j/slf4j-api -->
         <dependency>
@@ -284,10 +236,6 @@
             <id>www.dcm4che.org</id>
             <name>dcm4che Repository</name>
             <url>http://www.dcm4che.org/maven2</url>
-        </repository>
-        <repository>
-            <id>javaopencvbook</id>
-            <url>https://raw.github.com/JavaOpenCVBook/code/maven2/</url>
         </repository>
     </repositories>
     <distributionManagement>
