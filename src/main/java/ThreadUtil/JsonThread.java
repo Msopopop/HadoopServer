@@ -57,7 +57,8 @@ public class JsonThread extends BaseThread implements Runnable {
                     String FileName = FileExName.substring(0, FileExName.length() - 4);
 
                     String FullFileName = FILE_ROOT_DIR + FileName; // "home/xxx/a.json"
-                    File GSPSFile = json2DCM(FullFileName);
+                    File GSPSFile = new File(FullFileName);
+
                     if (GSPSFile.exists() && GSPSFile.length() != 0) {
                         hdfsUtil.mkdir(HDFS_ROOT_DIR + Date);
                         // Upload files to hdfs://master:9000/GSPSFile/yyyy-mm-dd
@@ -66,7 +67,8 @@ public class JsonThread extends BaseThread implements Runnable {
                         AttrUtil attrUploadUtil = new AttrUtil(GSPSFile);
                         attrUploadUtil.UploadToHBase(HBaseUtil, TABLE_NAME, HDFS_ROOT_DIR, Date, false);
                     } else {
-                        logger.error(FullFileName + " can not be converted to DICOM file");
+                        // logger.error(FullFileName + " can not be converted to DICOM file");
+                        logger.error("Invalid json file");
                     }
                 }
             }

@@ -30,9 +30,11 @@ public class AttrUtil {
      * @throws IOException
      */
     public AttrUtil(File file) throws IOException {
-        attrs = DicomParseUtil.loadDicomObject(file);
-        attrs.setSpecificCharacterSet("GBK");
         fileName = file.getName();
+        if (fileName.endsWith("m")) {
+            attrs = DicomParseUtil.loadDicomObject(file);
+            attrs.setSpecificCharacterSet("GBK");
+        }
     }
 
     private void UploadPatientColumn(HBaseUtil hBaseUtil, String UID) throws IOException {
@@ -480,8 +482,8 @@ public class AttrUtil {
 
     public void UploadToHBase(HBaseUtil hBaseUtil, String TABLENAME, String HDFS_ROOT_DIR, String Date, boolean isDcmImgFile) throws IOException {
         tableName = TABLENAME;
-        String UID = attrs.getString(Tag.StudyInstanceUID, "Unknown");
         if (isDcmImgFile) {
+            String UID = attrs.getString(Tag.StudyInstanceUID, "Unknown");
             hBaseUtil.createTable(tableName, columnFamilies);
             UploadPatientColumn(hBaseUtil, UID);
             UploadHospitalColumn(hBaseUtil, UID);
@@ -490,6 +492,7 @@ public class AttrUtil {
             UploadImageColumn(hBaseUtil, UID);
             UploadHBaseColumn(hBaseUtil, UID, HDFS_ROOT_DIR, Date);
         } else {
+            String UID = "123";
             UploadAnnotationColumn(hBaseUtil, UID, HDFS_ROOT_DIR, Date);
         }
     }
