@@ -9,7 +9,7 @@ import java.nio.file.*;
 import java.time.LocalDate;
 
 public class DicomThread extends BaseThread implements Runnable {
-
+    private Thread t;
     private static Logger logger = Logger.getLogger(DicomThread.class);
     private static String FILE_ROOT_DIR;
 
@@ -44,6 +44,12 @@ public class DicomThread extends BaseThread implements Runnable {
         }
     }
 
+    public void start() {
+        if (t == null) {
+            t = new Thread(this);
+            t.start();
+        }
+    }
     @SuppressWarnings("static-access")
     private void runDicom() throws IOException, InterruptedException {
         while (true) {

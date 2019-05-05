@@ -23,8 +23,8 @@ public class mainClass {
         jsonThread.setFilePath(XMLUtil.JSON_ROOT_DIR);
         jsonThread.setHdfsRootDir(XMLUtil.HDFS_ROOT_DIR_GSPS);
 
-        dicomThread.run();
-        jsonThread.run();
+        dicomThread.start();
+        jsonThread.start();
 
         // Close listeners thread before main thread exit
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {

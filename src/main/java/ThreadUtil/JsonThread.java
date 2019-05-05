@@ -12,7 +12,7 @@ import java.nio.file.*;
 import java.time.LocalDate;
 
 public class JsonThread extends BaseThread implements Runnable {
-
+    private Thread t;
     private static String HDFS_ROOT_DIR;
     private static Logger logger = Logger.getLogger(JsonThread.class);
     private static String FILE_ROOT_DIR;
@@ -42,6 +42,12 @@ public class JsonThread extends BaseThread implements Runnable {
         }
     }
 
+    public void start() {
+        if (t == null) {
+            t = new Thread(this);
+            t.start();
+        }
+    }
     public void setHdfsRootDir(String hdfsRootDir) {
         HDFS_ROOT_DIR = hdfsRootDir;
     }
