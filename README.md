@@ -4,6 +4,7 @@
 [![Build Status](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer.svg?branch=master)](https://travis-ci.com/sonoscape-HadoopProject-xjtu/HadoopServer)
 [![codebeat badge](https://codebeat.co/badges/74dffbf8-42a7-4029-b69f-bc1697e70b5f)](https://codebeat.co/projects/github-com-sonoscape-hadoopproject-xjtu-hadoopserver-master)
 [![codecov](https://codecov.io/gh/sonoscape-HadoopProject-xjtu/HadoopServer/branch/master/graph/badge.svg)](https://codecov.io/gh/sonoscape-HadoopProject-xjtu/HadoopServer)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsonoscape-HadoopProject-xjtu%2FHadoopServer.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsonoscape-HadoopProject-xjtu%2FHadoopServer?ref=badge_shield)
 
 欢迎来到本项目！请移步[Wiki](https://github.com/sonoscape-HadoopProject-xjtu/HadoopServer/wiki/%E6%AC%A2%E8%BF%8E)以了解更多资讯。
 
@@ -37,3 +38,6 @@ EPL-2.0
    [Dillinger]: <https://dillinger.io>
    [slst]:<http://slst.xjtu.edu.cn>
    [JDK]:<https://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html>
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fsonoscape-HadoopProject-xjtu%2FHadoopServer.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fsonoscape-HadoopProject-xjtu%2FHadoopServer?ref=badge_large)
